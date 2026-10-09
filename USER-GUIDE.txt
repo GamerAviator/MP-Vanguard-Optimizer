@@ -17,13 +17,21 @@ Plans do not update the roster automatically. After performing upgrades in the g
 
 ## Roster and level screenshots
 
-The game roster has six cards per row in a fixed order. Grothmar is card #5 (row 1, column 5), between Nyssa and Scryre. Capture fresh screenshots after his release; older captures have a different order. Use the full unfiltered roster, without changing its sorting. For multiple screenshots, capture consecutive sections in order; filename sorting helps but must be verified.
+Choose **Portraits** (the default) for partial or filtered rosters. Cards are identified from artwork against the known 50-Vanguard database, independently of their positions. Missing cards will not shift other matches. Portrait similarity is an estimate, not a guarantee.
 
-On **Import**, upload screenshots. In Step 1, confirm the **first visible row**, **visible complete rows**, **visible columns**, and each name on the grid overlay. Exclude clipped rows. Adjust the alignment corners if necessary. Layout defaults are only suggestions; check every screenshot, especially the short last row.
+Step 1: align the blue boxes to complete visible cards. Set visible rows and columns, and adjust the grid corners. Crop a short final row separately and set its column count; exclude clipped cards. Layout defaults are suggestions.
 
-Click **Read levels →** in Step 2. Step 3 shows each source screenshot with its review entries; switch images using the tabs. Confidence measures OCR quality, not certainty that the card position is correct. Use **Open full-size screenshot** for a closer look. Correct blanks or wrong levels, select verified entries, and apply. **Select readable levels** is a convenience, not automatic verification. Select only one occurrence of any duplicate card.
+Step 2: click **Read cards & levels →**. Card portraits are matched locally, and level OCR runs on your device. If OCR is unavailable, review still lets you choose cards and enter levels manually.
 
-Unknown cards beyond the 50-card database are not mapped. Do not shift known positions to accommodate a newly added card.
+Step 3: use the image tabs and compare the captured card against its suggested known portrait. Change the Vanguard selector if incorrect, and verify or correct the level. Card similarity and level OCR confidence are separate. Uncertain identities require manual selection. Every entry starts unchecked. Bulk selection skips low-confidence card matches, unidentified cards, unreadable levels, and duplicates. Review each selected entry before applying, and select only one occurrence of a duplicate Vanguard. Only selected cards change; other saved levels stay untouched.
+
+**Fixed positions** is an optional shortcut only for complete, unfiltered 50-card rosters in game order. Grothmar is #5, row 1 column 5. Old screenshots from before his release use a different order. Do not use fixed positions for accounts with missing Vanguards.
+
+## Might history
+
+Expand **Your progress** on Roster to see the might graph, growth since tracking began, and exact saved values. Existing accounts start from their current saved roster on first use of this update. New accounts start with their first nonempty saved roster. Each saved roster change records might. Resources, settings and projected optimizer plans do not count as actual growth.
+
+Recorded changes may include newly owned cards, corrections, and upgrades. Earlier unrecorded might cannot be recovered. History stays separate for each account and is included in exported/restored backups. Clearing site data without a backup can erase it.
 
 ## Resources and resource screenshot import
 
