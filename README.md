@@ -1,8 +1,6 @@
 # Mighty Party Vanguard Optimizer
 
-Updated 10.09.2026. Grothmar, cleaner import and Compare, polished navigation and footer, and separate roster/resource dates.
-
-Upload the extracted files and portraits folder to the root of your GitHub repository, replacing existing files, then commit.
+Upload all extracted files and portraits to your GitHub repository and commit. Includes the polished app and new winged shield install icon.
 
 # Mighty Party Vanguard Optimizer — User Guide
 
