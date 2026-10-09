@@ -1,6 +1,6 @@
 # Mighty Party Vanguard Optimizer — User Guide
 
-Unofficial community tool by GamerAviator. The optimizer uses a known 49-card database; verify recommendations against the game.
+Unofficial community tool by GamerAviator. The optimizer uses a known 50-card database; verify recommendations against the game.
 
 ## Quick start
 
@@ -15,13 +15,13 @@ Plans do not update the roster automatically. After performing upgrades in the g
 
 ## Roster and level screenshots
 
-The game roster has six cards per row in a fixed order. Use the full unfiltered roster, without changing its sorting. For multiple screenshots, capture consecutive sections in order; filename sorting helps but must be verified.
+The game roster has six cards per row in a fixed order. Grothmar is card #5 (row 1, column 5), between Nyssa and Scryre. Capture fresh screenshots after his release; older captures have a different order. Use the full unfiltered roster, without changing its sorting. For multiple screenshots, capture consecutive sections in order; filename sorting helps but must be verified.
 
 On **Import**, upload screenshots. In Step 1, confirm the **first visible row**, **visible complete rows**, **visible columns**, and each name on the grid overlay. Exclude clipped rows. Adjust the alignment corners if necessary. Layout defaults are only suggestions; check every screenshot, especially the short last row.
 
 Click **Read levels from aligned grid**. Step 2 shows each source screenshot with its review entries. Confidence measures OCR quality, not certainty that the card position is correct. Use **Open full-size screenshot** for a closer look. Correct blanks or wrong levels, select verified entries, and apply. **Select readable levels** is a convenience, not automatic verification. Select only one occurrence of any duplicate card.
 
-Unknown cards beyond the 49-card database are not mapped. Do not shift known positions to accommodate a newly added card.
+Unknown cards beyond the 50-card database are not mapped. Do not shift known positions to accommodate a newly added card.
 
 ## Resources and resource screenshot import
 
