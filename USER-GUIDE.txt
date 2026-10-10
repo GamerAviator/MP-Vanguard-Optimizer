@@ -106,3 +106,9 @@ Upload app files to the repository root, with index.html at the top level. In Se
 
 Expected project URL: https://gameraviator.github.io/MP-Vanguard-Optimizer/
 
+
+## Resource history and weekly changes
+
+Expand Resource progress on Resources to chart Essence, each faction’s Jewels, or either ticket type. History starts from current saved balances and records actual balance changes only, separately per account. It is included in backups.
+
+Weekly net changes compare the latest saved balance to the latest check-in at or before seven days ago. A short tracking period is labeled incomplete, and sparse check-ins may span more than a week. Stale balances prompt you to update rather than claiming a current weekly gain. Net changes include earnings, spending, purchases and corrections; they cannot determine total resources earned by playing alone.
