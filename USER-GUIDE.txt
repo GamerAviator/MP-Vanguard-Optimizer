@@ -79,7 +79,7 @@ The table shows current-budget might gain, gain with the offer, and their differ
 
 ## Install and offline use
 
-Use **Install app** where supported, or your browser's install/add-to-home-screen option. On iPhone/iPad, open the app in Safari and use **Share → Add to Home Screen**. Installation support varies by browser.
+The footer’s **Install app** button has device-specific guidance directly beneath it. Expand **How to install** and choose your device. Tapping Install app opens a native prompt where supported, or expands the nearby instructions. On iPhone/iPad, open the app in Safari and use **Share → Add to Home Screen**. Installation support varies by browser.
 
 Load the app online first. Its app files can then be cached for offline manual entry and calculations. Screenshot OCR needs an internet connection on first use to download its reader; offline OCR availability is not guaranteed.
 
