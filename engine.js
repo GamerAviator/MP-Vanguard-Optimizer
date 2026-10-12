@@ -3,7 +3,7 @@ export const keys=['pe','Order','Nature','Chaos','regatta','chariot'];
 // Apply the rarity multiplier to the unrounded curve, then floor each card as in game.
 export function might(rarity,l){if(!l)return 0;const r=rarities[rarity];return l<1000?Math.floor((r.factor*l**1.5+r.constant)*r.multiplier):r.base1000+r.postGain*(l-1000)}
 export function cost(l,m=1){return {j:(l>=1000?65000:Math.floor(2*l**1.5+8))*m,p:(l%10===0?essenceCosts[Math.min(l,1000)]:0)*m}}
-export function validate(a){for(const k of keys)if(!Number.isSafeInteger(a.resources[k])||a.resources[k]<0)throw Error('Resources must be nonnegative whole numbers.');for(const v of database){const l=a.levels[v.name]||0;if(!Number.isSafeInteger(l)||l<0||l>100000)throw Error('Levels must be whole numbers from 0 to 100,000.');}}
+export function validate(a){if(a.resources.sov!=null&&(!Number.isSafeInteger(a.resources.sov)||a.resources.sov<0))throw Error('SOVs must be a nonnegative whole number.');for(const k of keys)if(!Number.isSafeInteger(a.resources[k])||a.resources[k]<0)throw Error('Resources must be nonnegative whole numbers.');for(const v of database){const l=a.levels[v.name]||0;if(!Number.isSafeInteger(l)||l<0||l>100000)throw Error('Levels must be whole numbers from 0 to 100,000.');}}
 function setup(a){validate(a);const b={...a.resources};b.pe+=14000*(Math.floor(b.regatta/2500)+Math.floor(b.chariot/2500));return {b,m:a.settings.guildBoost?.95:1,items:database.filter(v=>a.levels[v.name]>0).map(v=>({...v,start:a.levels[v.name],level:a.levels[v.name]}))}}
 // Aggregate in integer tenths so every faction/type subtotal stays exact.
 export function mightBreakdown(items){
@@ -12,7 +12,7 @@ export function mightBreakdown(items){
  for(const type of ['Melee','Ranged'])attackTypes[type]=aggregate(items.filter(v=>v.attackType===type));
  return {factions,attackTypes,total:aggregate(items)};
 }
-function summary(a,items,b,mode,status){const remaining={...a.resources},spent={...a.resources};
+function summary(a,items,b,mode,status){const remaining={...a.resources},spent=Object.fromEntries(keys.map(k=>[k,a.resources[k]]));
 const rawPE=items.reduce((s,v)=>s+(v.p||0),0);let bundles=Math.max(0,Math.ceil((rawPE-a.resources.pe-1e-7)/14000));const rg=Math.min(bundles,Math.floor(a.resources.regatta/2500));bundles-=rg;const ch=bundles;remaining.regatta-=rg*2500;remaining.chariot-=ch*2500;remaining.pe=a.resources.pe+(rg+ch)*14000-rawPE;
 for(const f of ['Order','Nature','Chaos'])remaining[f]=b[f]-items.filter(v=>v.faction===f).reduce((s,v)=>s+(v.j||0),0);
 for(const k of keys){remaining[k]=Math.max(0,remaining[k]);spent[k]=a.resources[k]-remaining[k];} // PE spent separately reports actual upgrade consumption

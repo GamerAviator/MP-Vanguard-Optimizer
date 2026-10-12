@@ -41,3 +41,5 @@ nav{gap:6px;padding:6px;border:1px solid var(--line);border-radius:14px;backgrou
 .alignment-adjustments{margin:14px 0}.alignment-adjustments>summary{cursor:pointer;color:#85c8ff;font-size:13px;font-weight:600;padding:10px 0}.alignment-adjustments[open]>summary{margin-bottom:8px}
 
 .capture-review-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #ffffff12}.capture-review-row input{width:auto}.capture-review-row:last-of-type{margin-bottom:16px}
+
+.sov-resource{margin-top:20px;border-color:#6f5426;background:linear-gradient(120deg,#242419,#152536)}.sov-resource .eyebrow{color:#f5c86a}.sov-resource h3{margin:8px 0 18px}.sov-resource label{display:block;max-width:340px}.sov-resource input{display:block;width:100%;margin-top:8px}.sov-resource .help{margin-bottom:0}

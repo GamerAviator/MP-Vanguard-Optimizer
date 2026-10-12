@@ -121,3 +121,17 @@ Clear repeated card borders are used to suggest the grid automatically. Check th
 On desktop Chrome, install the separate Vanguard Capture extension. Start fresh capture, then refresh the game and wait for loading. Developer Tools is not needed. Review matched names and levels, choose Select matched roster, and export checked data. The extension matches known game IDs, independently of missing cards or screen positions. New IDs stay unmatched.
 
 Select the correct optimizer account, then Import → Import Chrome capture JSON and choose vanguard-extract.json. Review the source label and values. Select all levels and/or Select all resources, or check individual values, then Apply checked Chrome data. Only checked fields change; other players remain untouched. Captured balances include Purple Essence and three faction Jewels. Ticket fields remain manual pending verification.
+
+## SOVs (Seals of Valor)
+
+Resources has a separate War Spoils section for exact SOV balances. Enter a
+whole number or leave it blank if not recorded. Resource progress includes
+a gold SOV history chart and weekly net changes. Older backups and check-ins
+with no SOV balance retain an unknown value, not an invented zero. SOVs stay
+with each player account and are included in backups. They are not converted
+to essence or used by either optimizer mode.
+
+Vanguard Capture 0.1.6 exports GuildRoulettePoints as SOVs. Review and select
+the SOV row when importing Chrome data. The game may show 14k while the
+capture supplies the exact 14,778. Screenshot resource-bar import continues
+to update only Essence and three Jewels; it leaves SOVs and tickets alone.
