@@ -1,0 +1,12 @@
+MYTHIC MIGHT ROUNDING CORRECTION
+
+Upload engine.js, sw.js and USER-GUIDE.txt to the root of your GitHub app,
+replacing the same-named files. Refresh/reopen the app after Pages updates.
+Do not upload this instruction file. No extension update or recapture needed.
+Your existing saved levels and resources are used.
+
+Applies the Mythic 20% multiplier BEFORE rounding each sub-1000 card down,
+rather than rounding the Legendary curve first. Level 500 Mythic now shows
+67,376, level 800 shows 136,058, and the supplied 50-card roster total matches
+the game at 6,221,982. Above-1000 curve and resource costs stay unchanged.
+All 92 automated tests passed; actual capture checked in both plan modes.

@@ -59,7 +59,7 @@ Each full bundle of 2,500 Regatta or Chariot tickets adds 14,000 essence to the 
 
 Lower rarities never receive further upgrades above target; existing above-target levels remain unchanged. Once every owned card reaches its target, only Mythics advance. If remaining foundation upgrades are unaffordable, the plan may leave resources unused rather than move into the Mythic-only phase. Faction equality is not guaranteed because available jewels and the owned roster differ.
 
-Mythic might is 20% higher than Legendary at the same level. Calculations retain precision internally; displayed faction and attack-type breakdowns use whole numbers that reconcile to the roster total.
+Mythic might applies a 20% bonus to the underlying Legendary curve. Below level 1,000, the bonus is applied before rounding each card down to whole might, matching the game display. At and above 1,000, Mythics start at 190,080 might and gain 300 per level. Totals and faction/attack-type breakdowns sum those card values.
 
 ## Reading the plan
 
