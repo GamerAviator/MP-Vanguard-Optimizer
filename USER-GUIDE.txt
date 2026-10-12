@@ -112,3 +112,6 @@ Expected project URL: https://gameraviator.github.io/MP-Vanguard-Optimizer/
 Expand Resource progress on Resources to chart Essence, each faction’s Jewels, or either ticket type. History starts from current saved balances and records actual balance changes only, separately per account. It is included in backups.
 
 Weekly net changes compare the latest saved balance to the latest check-in at or before seven days ago. A short tracking period is labeled incomplete, and sparse check-ins may span more than a week. Stale balances prompt you to update rather than claiming a current weekly gain. Net changes include earnings, spending, purchases and corrections; they cannot determine total resources earned by playing alone.
+
+IMPORT REVIEW UPDATES
+Clear repeated card borders are used to suggest the grid automatically. Check the blue preview boxes, then read. If detection is uncertain or missing, use Adjust alignment to change corners, rows and columns. Detection is a suggestion, especially on cropped or clipped screenshots. Apply saves checked entries and keeps the remaining review open. Continue through the screenshots, then choose Finish review to return to Roster. Leaving with unapplied entries asks for confirmation.
