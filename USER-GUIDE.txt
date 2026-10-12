@@ -25,7 +25,7 @@ Step 2: click **Read cards & levels →**. Card portraits are matched locally, a
 
 Step 3: use the image tabs and compare the captured card against its suggested known portrait. Change the Vanguard selector if incorrect, and verify or correct the level. Card similarity and level OCR confidence are separate. Uncertain identities require manual selection. Every entry starts unchecked. Bulk selection skips low-confidence card matches, unidentified cards, unreadable levels, and duplicates. Review each selected entry before applying, and select only one occurrence of a duplicate Vanguard. Only selected cards change; other saved levels stay untouched.
 
-**Fixed positions** is an optional shortcut only for complete, unfiltered 50-card rosters in game order. Grothmar is #5, row 1 column 5. Old screenshots from before his release use a different order. Do not use fixed positions for accounts with missing Vanguards.
+**Fixed positions** is an optional shortcut only for complete, unfiltered 50-card rosters in game order. Grothmar is #5, row 1 column 5. Old screenshots from before his release use a different order. Do not use fixed positions for accounts with missing Vanguards. In the current full roster, the last row is Bonny then Malphas. Common-card portrait associations and order have been corrected; existing saved levels remain keyed by name. A fresh verified import can correct older misassigned levels.
 
 ## Might history
 
@@ -115,3 +115,9 @@ Weekly net changes compare the latest saved balance to the latest check-in at or
 
 IMPORT REVIEW UPDATES
 Clear repeated card borders are used to suggest the grid automatically. Check the blue preview boxes, then read. If detection is uncertain or missing, use Adjust alignment to change corners, rows and columns. Detection is a suggestion, especially on cropped or clipped screenshots. Apply saves checked entries and keeps the remaining review open. Continue through the screenshots, then choose Finish review to return to Roster. Leaving with unapplied entries asks for confirmation.
+
+## Chrome capture import
+
+On desktop Chrome, install the separate Vanguard Capture extension. Start fresh capture, then refresh the game and wait for loading. Developer Tools is not needed. Review matched names and levels, choose Select matched roster, and export checked data. The extension matches known game IDs, independently of missing cards or screen positions. New IDs stay unmatched.
+
+Select the correct optimizer account, then Import → Import Chrome capture JSON and choose vanguard-extract.json. Review the source label and values. Select all levels and/or Select all resources, or check individual values, then Apply checked Chrome data. Only checked fields change; other players remain untouched. Captured balances include Purple Essence and three faction Jewels. Ticket fields remain manual pending verification.
