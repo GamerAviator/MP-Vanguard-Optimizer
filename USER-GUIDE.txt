@@ -135,3 +135,23 @@ Vanguard Capture 0.1.6 exports GuildRoulettePoints as SOVs. Review and select
 the SOV row when importing Chrome data. The game may show 14k while the
 capture supplies the exact 14,778. Screenshot resource-bar import continues
 to update only Essence and three Jewels; it leaves SOVs and tickets alone.
+
+## Correcting an import into the wrong account
+
+Export a backup before cleanup. First restore the affected account's current
+levels/resources from its own verified Chrome capture. Then on Roster open
+Progress → View exact saved values. Find the wrong import by timestamp and
+might, and choose Remove check-in. On Resources open Resource progress →
+Exact resource check-ins and remove the corresponding incorrect balance row.
+Check the values and time carefully; valid history stays in place. Charts and
+weekly comparisons recalculate from the remaining records. Removal never
+changes current levels/resources and is not re-added automatically on reload.
+Undo last removal is available for each history type during the current app
+session. It restores that row only. If the mistaken import was the very first
+record, earlier unrecorded values cannot be reconstructed; remaining valid
+check-ins become the baseline. Other accounts remain untouched.
+
+Roster → Delete account removes that named account's levels, resources and
+history from this device after confirmation. It does not delete other player
+accounts or affect the game. If you delete the last account, a new empty
+Account #1 is created. Export a backup before deleting if you need a copy.

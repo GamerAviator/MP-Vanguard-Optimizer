@@ -1,0 +1,2 @@
+import {newAccount} from './storage.js';
+export function deleteAccount(state,id){const account=state.accounts.find(a=>a.id===id);if(!account)throw Error('Account not found.');state.accounts=state.accounts.filter(a=>a.id!==id);if(!state.accounts.length)state.accounts.push(newAccount('Account #1'));if(state.selected===id||!state.accounts.some(a=>a.id===state.selected))state.selected=state.accounts[0].id;return account;}
