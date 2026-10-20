@@ -207,3 +207,13 @@ unknown. Any resource/might estimate is hypothetical and includes a separate
 later upgrade phase; event rewards do not fund the initial upgrade plan.
 That later phase also spends leftovers. The extra might attributed to wheel
 payouts is compared against spending those same leftovers without payouts.
+
+SAVED SOV PROJECTION
+Compare automatically shows a separate War Spoils projection using the SOV
+balance recorded on Resources. The normal current-budget plans stay unchanged.
+At the supplied level-50 odds, a spin costs 100 SOVs. Each Jewel faction has
+a 20% chance; Essence has a 15% chance. Low/midpoint/high vary the payout
+amount per hit, because probabilities within the shown ranges are unknown.
+The projection shows resource returns, both strategy gains and exact final
+levels. It uses current Guild Boost, excludes pending event rewards, and never
+applies estimated resources or upgrades to your saved account/history.
