@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Gamer Aviator's Vanguard Capture",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Capture and review Vanguard levels from game responses. Local-only; no cloud account.",
   "permissions": [
     "storage",
@@ -49,13 +49,10 @@
         "names.js",
         "unit-map.js",
         "extract.js",
-        "bridge.js",
-        "auto-play.js"
+        "bridge.js"
       ],
       "all_frames": true,
-      "run_at": "document_start",
-      "match_about_blank": true,
-      "match_origin_as_fallback": true
+      "run_at": "document_start"
     }
   ],
   "icons": {
@@ -64,5 +61,5 @@
     "48": "icons/vanguard-48.png",
     "128": "icons/vanguard-128.png"
   },
-  "version_name": "1.0.3"
+  "version_name": "1.0.4"
 }

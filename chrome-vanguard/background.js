@@ -1,37 +1,8 @@
-importScripts('names.js','unit-map.js','extract.js','export.js','play-detect.js');
+importScripts('names.js','unit-map.js','extract.js','export.js');
 const allowed=url=>{try{return /(^|\.)(mighty-party|blitzmightyparty)\.com$/.test(new URL(url).hostname)}catch{return false}};
 const queues=new Map();
 function enqueue(tabId,task){const next=(queues.get(tabId)||Promise.resolve()).catch(()=>{}).then(task);queues.set(tabId,next);next.finally(()=>{if(queues.get(tabId)===next)queues.delete(tabId)}).catch(()=>{});return next}
-async function visiblePlay(tab){
- const shot=await chrome.tabs.captureVisibleTab(tab.windowId,{format:'png'}),blob=await (await fetch(shot)).blob(),bitmap=await createImageBitmap(blob);
- const width=Math.min(800,bitmap.width),height=Math.round(bitmap.height*width/bitmap.width),canvas=new OffscreenCanvas(width,height),ctx=canvas.getContext('2d');ctx.drawImage(bitmap,0,0,width,height);bitmap.close();
- return VanguardPlayDetect.detect(ctx.getImageData(0,0,width,height));
-}
 chrome.runtime.onMessage.addListener((m,sender,reply)=>{
- if(m.type==='play-probe'||m.type==='play-claim'){
-  const tabId=sender.tab?.id;if(tabId===undefined||!(allowed(sender.url)||(/^(about:blank|about:srcdoc|blob:|data:)/.test(sender.url||'')&&allowed(sender.origin)))){reply({done:true});return;}
-  enqueue(tabId,async()=>{
-   const key='capture:'+tabId,state=(await chrome.storage.local.get(key))[key];
-   if(!state?.enabled||state.autoStatus!=='waiting'||state.autoPlayAttempted||!Number.isFinite(m.documentStartedAt)||m.documentStartedAt<state.startedAt||Date.now()-state.startedAt>90000)return {done:true};
-   const tab=await chrome.tabs.get(tabId),active=await chrome.tabs.query({active:true,lastFocusedWindow:true});if(!tab.active||active[0]?.id!==tabId)return {done:false};
-   if(m.type==='play-claim'){
-    if(!m.token||m.token!==state.playToken||Date.now()-state.playMatchedAt>1500)return {done:true};
-    try{const fresh=await visiblePlay(tab);if(!fresh||Math.abs(fresh.x-state.playPoint.x)>.01||Math.abs(fresh.y-state.playPoint.y)>.01)return {done:true};}catch{return {done:true};}
-    if(!(await chrome.tabs.get(tabId)).active)return {done:true};
-    state.autoPlayAttempted=true;state.autoPlayStatus='sent';delete state.playToken;await chrome.storage.local.set({[key]:state});return {ok:true};
-   }
-   if(sender.frameId!==0||!m.viewport||m.viewport.width<200||m.viewport.height<120)return {done:true};
-   if(Date.now()-(state.playLastProbe||0)<1500)return {done:false};
-   state.autoPlayStatus='looking';state.playLastProbe=Date.now();await chrome.storage.local.set({[key]:state});
-   try{
-    // Pixels are used in memory for launch detection only; never saved or exported.
-    const point=await visiblePlay(tab);
-    if(!point)return {done:false};
-    const current=await chrome.tabs.get(tabId);if(!current.active)return {done:false};
-    state.playToken=String(state.startedAt)+'-'+Math.random().toString(36).slice(2);state.playMatchedAt=Date.now();state.playPoint=point;state.autoPlayStatus='found';await chrome.storage.local.set({[key]:state});return {point,token:state.playToken};
-   }catch{state.autoPlayStatus='manual';await chrome.storage.local.set({[key]:state});return {done:true};}
-  }).then(reply,()=>reply({done:false}));return true;
- }
  if(m.type==='capture'){
   const tabId=sender.tab?.id;if(tabId===undefined||!allowed(sender.url)||!m.capture||JSON.stringify(m.capture).length>500000)return;
   enqueue(tabId,async()=>{

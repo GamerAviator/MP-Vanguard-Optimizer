@@ -180,7 +180,7 @@ Older complete-roster screenshots use a different order. Use Portrait mode
 for those images and check suggestions before applying levels.
 Existing accounts keep all named levels and history. New cards default to
 unowned (0) until you enter or import a level.
-Chrome Capture 1.0.3 automatically maps ID 51 to Pyro and ID 52 to Viryel.
+Chrome Capture 1.0.4 automatically maps ID 51 to Pyro and ID 52 to Viryel.
 After replacing the extension folder, reload the extension in chrome://extensions
 and use Extract this account to capture a fresh profile and download its VCEF.
 
@@ -228,3 +228,8 @@ VCEF CAPTURES (CAPTURE 1.0)
 New capture files end in .vcef (Vanguard Capture Extractor File). Choose VCEF capture
 on Import to load them. Older captures remain supported. A capture file
 is separate from an account backup; review the player and values before applying.
+
+CAPTURING WITH 1.0.4
+Click Extract this account, wait for the game to reload, then click its green
+Play button. Keep the game open. Capture and the VCEF download continue
+automatically, even if the extension popup closes.
