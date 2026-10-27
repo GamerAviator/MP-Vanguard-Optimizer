@@ -156,57 +156,10 @@ history from this device after confirmation. It does not delete other player
 accounts or affect the game. If you delete the last account, a new empty
 Account #1 is created. Export a backup before deleting if you need a copy.
 
-## Grade Up Event forecast (14–27 October 2026)
+## Completed Grade Up campaign
 
-The Event tab models the supplied Vanguard Grade Up campaign: Scryre,
-Alucard, Rhaenis, Milene, Cryovar and Pyrelios reaching level 450. First enter
-these six levels AS OF 14 October. The app cannot reconstruct those levels
-from today's roster or total-might history. Fill from current roster is a
-draft shortcut; review the starting levels before recording them. Starting
-levels and forecast settings are saved separately for each account and are
-included in backups.
-
-Starting troops already at 450 occupy their reward tiers. Newly reached
-tiers pay 500 / 750 / 1,000 / 1,250 / 1,500 / 1,750 SOVs. Starting with two
-and finishing with four pays 1,000 + 1,250 = 2,250. Starting below 450 on all
-six and finishing all six pays 6,750. If all six started at 450 or higher,
-the separate thank-you reward is 1,000. Rewards are delivered after the event.
-
-Compare Event targets, Max Might and Balanced Account. Event targets checks
-all combinations of full 450 completions against current resources, including
-ticket conversion and the saved Guild Boost setting. It does not unlock
-unowned cards or spend leftover resources on partial event upgrades. Its
-tie-break favors lower normalized resource use. The other two modes retain
-their existing full-roster behavior. No event-cost discount is applied.
-
-The forecast shows exact funded final levels, might, resource spending, SOV
-tiers already qualified, extra SOVs from the plan, and projected total SOVs.
-Forecasts never apply upgrades, add SOVs to saved resources, or create actual
-progress-history records. Re-import real game data after actual upgrades.
-
-War Spoils model: the supplied level-50 screen costs 100 SOVs/spin. Category
-chances: Order 20%, Nature 20%, Chaos 20%, Purple Essence 15%, the 500-unit
-potion reward 12%, Gems 5%, the 500-unit hero reward 5%, Horn 2%, Scroll 1%.
-Jewels range 140k–420k per hit; Essence ranges 24k–49k. Within-category
-amount probabilities are not supplied. Low/Midpoint/High are explicit payout
-assumptions, not verified payout averages. Expected resource ranges bound
-the long-run mean; actual random spin outcomes can be outside that range.
-The midpoint uses the center of each stated range. Reward amounts are
-transcribed from abbreviated wheel labels. Choose custom averages if your
-wheel differs or you have better within-category data. Other wheel rewards
-are displayed separately and are not used in the Vanguard upgrade budget.
-
-A full 6,750-SOV reward buys 67 spins with 50 SOVs left in that scenario.
-Expected Essence is 241,200–492,450; the midpoint scenario is 366,825. Each
-faction's expected Jewels are 1,876,000–5,628,000; midpoint 3,752,000.
-
-Choose Event reward only for an illustration of the reward's buying power,
-or Saved SOVs + pending reward for combined spending. Mark a reward already
-included in saved SOVs to avoid adding it twice. Missing saved SOVs stay
-unknown. Any resource/might estimate is hypothetical and includes a separate
-later upgrade phase; event rewards do not fund the initial upgrade plan.
-That later phase also spends leftovers. The extra might attributed to wheel
-payouts is compared against spending those same leftovers without payouts.
+The campaign has ended and its Event tab has been removed.
+Use Compare for projected returns from the SOVs recorded on Resources.
 
 SAVED SOV PROJECTION
 Compare automatically shows a separate War Spoils projection using the SOV
@@ -235,7 +188,7 @@ UPGRADE COST ROUNDING
 Guild Boost costs round UP separately for Jewels and Essence on every level.
 Plans sum those whole-number step costs; they do not discount the total once.
 For example, Pyro 220 to 221 with boost costs 6,208 Order Jewels and 2,508
-Purple Essence. All modes, offer/event/SOV forecasts and plan repricing use
+Purple Essence. All modes, offer/SOV forecasts and plan repricing use
 the same rounded costs. Actual plan Essence savings use the same exact steps;
 general payback benchmarks remain estimates based on the nominal 5% discount.
 
