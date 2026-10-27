@@ -87,7 +87,7 @@ Load the app online first. Its app files can then be cached for offline manual e
 
 Accounts are saved in your current browser on your current device. There is no cloud sync or login. Clearing only cached images/files normally does not erase accounts; clearing site data can. Private browsing is not suitable for durable storage.
 
-Click **Export backup** to download vanguard-accounts.json containing all accounts. Keep it somewhere safe and private. **Restore backup replaces all accounts currently saved on that device** after confirmation—it does not merge them. Export the current device's data before restoring.
+Click **Export backup** to download your account backup containing all accounts. Keep it somewhere safe and private. **Restore backup replaces all accounts currently saved on that device** after confirmation—it does not merge them. Export the current device's data before restoring.
 
 Different browsers, installed app contexts, and website addresses can have separate storage. To move from the original app to the GitHub site, export from the original and restore on the new address. Do not upload personal account backups or screenshots into the public GitHub repository.
 
@@ -226,5 +226,5 @@ are never needed for a normal import.
 
 VCEF CAPTURES (CAPTURE 0.1.13)
 New capture files end in .vcef (Vanguard Capture Extractor File). Choose VCEF capture
-on Import to load them. Older .json captures remain supported. A capture file
+on Import to load them. Older captures remain supported. A capture file
 is separate from an account backup; review the player and values before applying.

@@ -20,7 +20,7 @@ INSTALL / UPDATE IN EACH CHROME PROFILE
 1. Extract chrome-vanguard to a permanent folder.
 2. Switch to the desired Chrome profile using Chrome's profile selector.
 3. Open chrome://extensions and enable Developer mode.
-4. New profile: Load unpacked → choose chrome-vanguard (manifest.json).
+4. New profile: Load unpacked → choose chrome-vanguard (the extension folder).
    Existing profile: replace its extension files and click Reload on its card.
 5. Repeat for other profiles. You can select the same permanent folder in each
    profile. Chrome extension storage remains separate for each profile.
@@ -110,5 +110,5 @@ their own nested sections. No selection is needed in the extension for a
 normal automatic download; choose what to apply in the optimizer.
 
 0.1.13: Chrome-style rounded popup with system light/dark colors. Downloads
-use .vcef (Vanguard Capture Extractor File). The optimizer still accepts older .json
+use .vcef (Vanguard Capture Extractor File). The optimizer still accepts older captures
 captures. The underlying capture schema and review safeguards are unchanged.
