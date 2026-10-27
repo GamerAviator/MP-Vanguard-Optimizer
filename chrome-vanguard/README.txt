@@ -124,3 +124,7 @@ Keep the game tab active and visible. If Play remains, click it manually.
 The visual check processes temporary tab pixels locally in memory; no screen
 images are saved, exported or sent to a server. No additional permissions.
 The game may reject synthetic input; manual Play always remains available.
+
+1.0.2: Supports launch controls in inherited-origin embedded game frames.
+Shows whether Play is being located, was found, or received a click attempt.
+If Play remains visible, click it manually; capture continues.
