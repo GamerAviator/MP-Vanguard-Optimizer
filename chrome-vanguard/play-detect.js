@@ -14,9 +14,9 @@ function detect({width:w,height:h,data}){
   const bw=maxX-minX+1,bh=maxY-minY+1,cx=(minX+maxX)/2/w,cy=(minY+maxY)/2/h;
   if(bw/w<.12||bw/w>.36||bh/h<.035||bh/h>.15||bw/bh<3.5||bw/bh>5.5||cx<.32||cx>.68||cy<.68||cy>.97||queue.length/(bw*bh)<.6)continue;
   let best=0;
-  for(const ox of [-.006,0,.006])for(const oy of [-.02,0,.02]){let tp=0,tn=0,positive=0,negative=0;
+  for(const ox of [-.012,-.006,0,.006,.012])for(const oy of [-.04,-.02,0,.02,.04])for(const stretchX of [.96,1,1.04])for(const stretchY of [.94,1,1.06]){let tp=0,tn=0,positive=0,negative=0;
    for(let gy=0;gy<18;gy++)for(let gx=0;gx<48;gx++){
-    const sx=Math.round(minX+bw*(78/256+gx*(98/256)/47+ox)),sy=Math.round(minY+bh*(14/59+gy*(27/59)/17+oy)),i=(sy*w+sx)*4;
+    const sx=Math.round(minX+bw*(127/256+(gx/47-.5)*(98/256)*stretchX+ox)),sy=Math.round(minY+bh*(27.5/59+(gy/17-.5)*(27/59)*stretchY+oy)),i=(sy*w+sx)*4;
     const dark=data[i]<110&&data[i+1]<150,expected=glyph[gy][gx]==='1';
     if(expected){positive++;if(dark)tp++}else{negative++;if(!dark)tn++}
    }

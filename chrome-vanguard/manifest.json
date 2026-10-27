@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Gamer Aviator's Vanguard Capture",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Capture and review Vanguard levels from game responses. Local-only; no cloud account.",
   "permissions": [
     "storage",
@@ -64,5 +64,5 @@
     "48": "icons/vanguard-48.png",
     "128": "icons/vanguard-128.png"
   },
-  "version_name": "1.0.2"
+  "version_name": "1.0.3"
 }

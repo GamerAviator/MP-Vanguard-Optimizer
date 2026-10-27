@@ -128,3 +128,7 @@ The game may reject synthetic input; manual Play always remains available.
 1.0.2: Supports launch controls in inherited-origin embedded game frames.
 Shows whether Play is being located, was found, or received a click attempt.
 If Play remains visible, click it manually; capture continues.
+
+1.0.3: Scale-aware Play lettering matching. Includes a regression check for
+the screen size that previously remained at Looking for the green Play button.
+The confidence cutoff and one-click extraction guard remain unchanged.
