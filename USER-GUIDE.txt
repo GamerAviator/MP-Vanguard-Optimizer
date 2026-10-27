@@ -180,7 +180,7 @@ Older complete-roster screenshots use a different order. Use Portrait mode
 for those images and check suggestions before applying levels.
 Existing accounts keep all named levels and history. New cards default to
 unowned (0) until you enter or import a level.
-Chrome Capture 0.1.13 automatically maps ID 51 to Pyro and ID 52 to Viryel.
+Chrome Capture 1.0 automatically maps ID 51 to Pyro and ID 52 to Viryel.
 After replacing the extension folder, reload the extension in chrome://extensions
 and use Extract this account to capture a fresh profile and download its VCEF.
 
@@ -192,9 +192,9 @@ Purple Essence. All modes, offer/SOV forecasts and plan repricing use
 the same rounded costs. Actual plan Essence savings use the same exact steps;
 general payback benchmarks remain estimates based on the nominal 5% discount.
 
-PROFILE ID ACCOUNT MATCHING (CAPTURE 0.1.13)
+PROFILE ID ACCOUNT MATCHING (CAPTURE 1.0)
 The extension now uses the blue-and-gold Vanguard shield. Download Capture
-0.1.13 from Import, replace the extension folder and reload it in Chrome.
+1.0 from Import, replace the extension folder and reload it in Chrome.
 Each fresh capture includes the game profile ID when an explicit ID field is
 available. If the ID is not detected, enter your numeric game profile ID in
 the extension's optional field before Extract this account. This fallback
@@ -217,14 +217,14 @@ extracting and finding the VCEF, profile-ID linking, selecting reviewed levels
 and resources, and applying them. Desktop Chrome is required for extraction;
 mobile users can transfer and import a VCEF already extracted on a computer.
 
-CAPTURE 0.1.13 SIMPLE POPUP
+CAPTURE 1.0 SIMPLE POPUP
 The main extension popup shows Extract this account, save status and the
 profile ID when available. Choose which levels/resources to apply in the app.
 Optional profile-ID entry, unmatched-card review, manual export and diagnostics
 are under the collapsed Troubleshooting section. Diagnostics are optional and
 are never needed for a normal import.
 
-VCEF CAPTURES (CAPTURE 0.1.13)
+VCEF CAPTURES (CAPTURE 1.0)
 New capture files end in .vcef (Vanguard Capture Extractor File). Choose VCEF capture
 on Import to load them. Older captures remain supported. A capture file
 is separate from an account backup; review the player and values before applying.

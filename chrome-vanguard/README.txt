@@ -1,3 +1,4 @@
+Gamer Aviator’s Vanguard Capture 1.0
 MIGHTY PARTY VANGUARD CAPTURE — 0.1.8
 
 ONE-CLICK EXTRACTION
@@ -112,3 +113,7 @@ normal automatic download; choose what to apply in the optimizer.
 0.1.13: Chrome-style rounded popup with system light/dark colors. Downloads
 use .vcef (Vanguard Capture Extractor File). The optimizer still accepts older captures
 captures. The underlying capture schema and review safeguards are unchanged.
+
+1.0: Continuous popup background with no inset frame or outer padding.
+New captures use .vcef. Install by replacing your existing extension folder,
+then click Reload on chrome://extensions.

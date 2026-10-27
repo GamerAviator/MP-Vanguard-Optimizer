@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "Mighty Party Vanguard Capture",
-  "version": "0.1.13",
+  "name": "Gamer Aviator's Vanguard Capture",
+  "version": "1.0.0",
   "description": "Capture and review Vanguard levels from game responses. Local-only; no cloud account.",
   "permissions": [
     "storage",
@@ -60,5 +60,6 @@
     "32": "icons/vanguard-32.png",
     "48": "icons/vanguard-48.png",
     "128": "icons/vanguard-128.png"
-  }
+  },
+  "version_name": "1.0"
 }
