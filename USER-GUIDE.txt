@@ -227,8 +227,9 @@ Older complete-roster screenshots use a different order. Use Portrait mode
 for those images and check suggestions before applying levels.
 Existing accounts keep all named levels and history. New cards default to
 unowned (0) until you enter or import a level.
-Chrome Capture 0.1.9 includes both names in its review list. Internal game IDs
-are unverified, so review and map unmatched ID rows before exporting.
+Chrome Capture 0.1.10 automatically maps ID 51 to Pyro and ID 52 to Viryel.
+After replacing the extension folder, reload the extension in chrome://extensions
+and use Extract this account to capture a fresh profile and download its JSON.
 
 UPGRADE COST ROUNDING
 Guild Boost costs round UP separately for Jewels and Essence on every level.
