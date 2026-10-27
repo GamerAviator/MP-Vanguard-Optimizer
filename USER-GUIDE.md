@@ -1,6 +1,6 @@
 # Mighty Party Vanguard Optimizer — User Guide
 
-Unofficial community tool by GamerAviator. The optimizer uses a known 50-card database; verify recommendations against the game.
+Unofficial community tool by GamerAviator. The optimizer uses a known 52-card database; verify recommendations against the game.
 
 ## Quick start
 
@@ -21,7 +21,7 @@ On **Import**, upload screenshots. In Step 1, confirm the **first visible row**,
 
 Click **Read levels from aligned grid**. Step 2 shows each source screenshot with its review entries. Confidence measures OCR quality, not certainty that the card position is correct. Use **Open full-size screenshot** for a closer look. Correct blanks or wrong levels, select verified entries, and apply. **Select readable levels** is a convenience, not automatic verification. Select only one occurrence of any duplicate card.
 
-Unknown cards beyond the 50-card database are not mapped. Do not shift known positions to accommodate a newly added card.
+Unknown cards beyond the 52-card database are not mapped. Do not shift known positions to accommodate a newly added card.
 
 ## Resources and resource screenshot import
 

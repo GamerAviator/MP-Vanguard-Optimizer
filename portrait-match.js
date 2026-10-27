@@ -23,7 +23,7 @@ export function rankPortraits(features,references){
 }
 let referencePromise;
 function featureFromRegion(img,region){const canvas=document.createElement('canvas');canvas.width=24;canvas.height=24;const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,region.x,region.y,region.width,region.height,0,0,24,24);return portraitFeature(ctx.getImageData(0,0,24,24).data)}
-export function loadPortraitReferences(){if(!referencePromise)referencePromise=Promise.all(database.map(async(v,index)=>{const img=new Image();img.src=new URL(v.portrait,import.meta.url).href;await img.decode();return {name:v.name,index,feature:featureFromRegion(img,{x:img.naturalWidth*.09,y:img.naturalHeight*.09,width:img.naturalWidth*.82,height:img.naturalHeight*.82})}})).catch(err=>{referencePromise=null;throw err});return referencePromise}
+export function loadPortraitReferences(){if(!referencePromise)referencePromise=Promise.all(database.map(async(v,index)=>{const img=new Image();img.src=new URL(v.portrait,import.meta.url).href;await img.decode();return {name:v.name,index,feature:featureFromRegion(img,v.portraitRegion?{x:img.naturalWidth*v.portraitRegion.x,y:img.naturalHeight*v.portraitRegion.y,width:img.naturalWidth*v.portraitRegion.width,height:img.naturalHeight*v.portraitRegion.height}:{x:img.naturalWidth*.09,y:img.naturalHeight*.09,width:img.naturalWidth*.82,height:img.naturalHeight*.82})}})).catch(err=>{referencePromise=null;throw err});return referencePromise}
 export function matchCardPortrait(img,cell,references){
  const features=[];
  // Search small framing differences; ignore the card footer containing might/level.

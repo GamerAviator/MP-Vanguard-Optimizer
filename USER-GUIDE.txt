@@ -1,6 +1,6 @@
 # Mighty Party Vanguard Optimizer — User Guide
 
-Unofficial community tool by GamerAviator. The optimizer uses a known 50-card database; verify recommendations against the game.
+Unofficial community tool by GamerAviator. The optimizer uses a known 52-card database; verify recommendations against the game.
 
 ## Quick start
 
@@ -17,7 +17,7 @@ Plans do not update the roster automatically. After performing upgrades in the g
 
 ## Roster and level screenshots
 
-Choose **Portraits** (the default) for partial or filtered rosters. Cards are identified from artwork against the known 50-Vanguard database, independently of their positions. Missing cards will not shift other matches. Portrait similarity is an estimate, not a guarantee.
+Choose **Portraits** (the default) for partial or filtered rosters. Cards are identified from artwork against the known 52-Vanguard database, independently of their positions. Missing cards will not shift other matches. Portrait similarity is an estimate, not a guarantee.
 
 Step 1: align the blue boxes to complete visible cards. Set visible rows and columns, and adjust the grid corners. Crop a short final row separately and set its column count; exclude clipped cards. Layout defaults are suggestions.
 
@@ -25,7 +25,7 @@ Step 2: click **Read cards & levels →**. Card portraits are matched locally, a
 
 Step 3: use the image tabs and compare the captured card against its suggested known portrait. Change the Vanguard selector if incorrect, and verify or correct the level. Card similarity and level OCR confidence are separate. Uncertain identities require manual selection. Every entry starts unchecked. Bulk selection skips low-confidence card matches, unidentified cards, unreadable levels, and duplicates. Review each selected entry before applying, and select only one occurrence of a duplicate Vanguard. Only selected cards change; other saved levels stay untouched.
 
-**Fixed positions** is an optional shortcut only for complete, unfiltered 50-card rosters in game order. Grothmar is #5, row 1 column 5. Old screenshots from before his release use a different order. Do not use fixed positions for accounts with missing Vanguards. In the current full roster, the last row is Bonny then Malphas. Common-card portrait associations and order have been corrected; existing saved levels remain keyed by name. A fresh verified import can correct older misassigned levels.
+**Fixed positions** is an optional shortcut only for complete, unfiltered 52-card rosters in game order. Grothmar is #5, row 1 column 5. Old screenshots from before his release use a different order. Do not use fixed positions for accounts with missing Vanguards. In the current full roster, the last row is Bonny then Malphas. Common-card portrait associations and order have been corrected; existing saved levels remain keyed by name. A fresh verified import can correct older misassigned levels.
 
 ## Might history
 
@@ -217,3 +217,15 @@ amount per hit, because probabilities within the shown ranges are unknown.
 The projection shows resource returns, both strategy gains and exact final
 levels. It uses current Guild Boost, excludes pending event rewards, and never
 applies estimated resources or upgrades to your saved account/history.
+
+OCTOBER 27 ROSTER UPDATE
+Pyro: Legendary, Order, Ranged; slot 23 (row 4, column 5).
+Viryel: Legendary, Nature, Ranged; slot 24 (row 4, column 6).
+Both use the Legendary might/cost model and Balanced target 1,000.
+The full roster now has 52 cards; the final row is Zuul, Surus, Bonny, Malphas.
+Older complete-roster screenshots use a different order. Use Portrait mode
+for those images and check suggestions before applying levels.
+Existing accounts keep all named levels and history. New cards default to
+unowned (0) until you enter or import a level.
+Chrome Capture 0.1.9 includes both names in its review list. Internal game IDs
+are unverified, so review and map unmatched ID rows before exporting.

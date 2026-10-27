@@ -5,4 +5,4 @@ export function readLevel(text,confidence=0){const normalized=String(text).norma
 
 // Screenshot filenames preserve capture order when the operating system supplies files in reverse.
 export function orderScreenshots(files){return Array.from(files).sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));}
-export function screenshotLayout(width,height,nextRow=1){const short=height/width<.35;const rows=short?1:height/width>.6?3:2;const startRow=short?9:Math.min(9,nextRow);return {startRow,rows:Math.min(rows,10-startRow),columns:short?2:6,crop:short?{x:.06,y:.08,width:.28,height:.74}:rows===2?{x:.04,y:.14,width:.9,height:.7}:{x:.035,y:.115,width:.92,height:.87}};}
+export function screenshotLayout(width,height,nextRow=1){const short=height/width<.35,lastColumns=database.length%6||6;const rows=short?1:height/width>.6?3:2;const startRow=short?9:Math.min(9,nextRow);return {startRow,rows:Math.min(rows,10-startRow),columns:short?lastColumns:6,crop:short?{x:.06,y:.08,width:.14*lastColumns,height:.74}:rows===2?{x:.04,y:.14,width:.9,height:.7}:{x:.035,y:.115,width:.92,height:.87}};}
