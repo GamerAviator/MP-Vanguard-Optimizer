@@ -120,7 +120,7 @@ Clear repeated card borders are used to suggest the grid automatically. Check th
 
 On desktop Chrome, install the separate Vanguard Capture extension. Start fresh capture, then refresh the game and wait for loading. Developer Tools is not needed. Review matched names and levels, choose Select matched roster, and export checked data. The extension matches known game IDs, independently of missing cards or screen positions. New IDs stay unmatched.
 
-Select the correct optimizer account, then Import → Import Chrome capture JSON and choose vanguard-extract.json. Review the source label and values. Select all levels and/or Select all resources, or check individual values, then Apply checked Chrome data. Only checked fields change; other players remain untouched. Captured balances include Purple Essence and three faction Jewels. Ticket fields remain manual pending verification.
+Select the correct optimizer account, then Import → Import VCEF capture and choose vanguard-capture.vcef. Review the source label and values. Select all levels and/or Select all resources, or check individual values, then Apply checked Chrome data. Only checked fields change; other players remain untouched. Captured balances include Purple Essence and three faction Jewels. Ticket fields remain manual pending verification.
 
 ## SOVs (Seals of Valor)
 
@@ -180,9 +180,9 @@ Older complete-roster screenshots use a different order. Use Portrait mode
 for those images and check suggestions before applying levels.
 Existing accounts keep all named levels and history. New cards default to
 unowned (0) until you enter or import a level.
-Chrome Capture 0.1.12 automatically maps ID 51 to Pyro and ID 52 to Viryel.
+Chrome Capture 0.1.13 automatically maps ID 51 to Pyro and ID 52 to Viryel.
 After replacing the extension folder, reload the extension in chrome://extensions
-and use Extract this account to capture a fresh profile and download its JSON.
+and use Extract this account to capture a fresh profile and download its VCEF.
 
 UPGRADE COST ROUNDING
 Guild Boost costs round UP separately for Jewels and Essence on every level.
@@ -192,9 +192,9 @@ Purple Essence. All modes, offer/SOV forecasts and plan repricing use
 the same rounded costs. Actual plan Essence savings use the same exact steps;
 general payback benchmarks remain estimates based on the nominal 5% discount.
 
-PROFILE ID ACCOUNT MATCHING (CAPTURE 0.1.12)
+PROFILE ID ACCOUNT MATCHING (CAPTURE 0.1.13)
 The extension now uses the blue-and-gold Vanguard shield. Download Capture
-0.1.12 from Import, replace the extension folder and reload it in Chrome.
+0.1.13 from Import, replace the extension folder and reload it in Chrome.
 Each fresh capture includes the game profile ID when an explicit ID field is
 available. If the ID is not detected, enter your numeric game profile ID in
 the extension's optional field before Extract this account. This fallback
@@ -205,21 +205,26 @@ confirmation and review the data to apply. Later captures with that ID route
 to the linked account even if its player name changes. Unknown IDs cannot
 be applied to accounts linked to another ID. You can manage or remove a link
 using Profile ID on Roster. Links are local and included in account backups.
-Older JSON without a profile ID continues to require manual account checks.
+Older VCEF without a profile ID continues to require manual account checks.
 
 CHROME IMPORT WALKTHROUGH
-Import now has a How to import from Chrome button next to Choose Chrome JSON.
+Import now has a How to import from Chrome button next to Choose VCEF capture.
 Click the walkthrough link to open a separate, resizable instructions window
 on desktop. Position it beside the game or optimizer. Browsers may open a tab
 instead. Close that window/tab when finished, or reopen it from Import.
 It covers installing or updating the extension, selecting the game account,
-extracting and finding the JSON, profile-ID linking, selecting reviewed levels
+extracting and finding the VCEF, profile-ID linking, selecting reviewed levels
 and resources, and applying them. Desktop Chrome is required for extraction;
-mobile users can transfer and import a JSON already extracted on a computer.
+mobile users can transfer and import a VCEF already extracted on a computer.
 
-CAPTURE 0.1.12 SIMPLE POPUP
+CAPTURE 0.1.13 SIMPLE POPUP
 The main extension popup shows Extract this account, save status and the
 profile ID when available. Choose which levels/resources to apply in the app.
 Optional profile-ID entry, unmatched-card review, manual export and diagnostics
 are under the collapsed Troubleshooting section. Diagnostics are optional and
 are never needed for a normal import.
+
+VCEF CAPTURES (CAPTURE 0.1.13)
+New capture files end in .vcef (Vanguard Capture Extractor File). Choose VCEF capture
+on Import to load them. Older .json captures remain supported. A capture file
+is separate from an account backup; review the player and values before applying.

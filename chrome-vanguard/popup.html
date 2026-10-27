@@ -1,0 +1,17 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="popup.css"></head><body>
+<main class="surface">
+<div class="brand"><img src="icons/vanguard-48.png" width="48" height="48" alt="Vanguard shield"><small>GAMERAVIATOR</small><h1>Vanguard Capture</h1></div>
+<p class="intro">Download this player’s levels and resources. Choose what to apply in the optimizer.</p>
+<button id="extract" class="extract-primary"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 16v4h14v-4"/></svg>Extract this account</button>
+<div class="capture-status"><p id="status" role="status">Ready</p><p id="profile-status" class="note" hidden></p>
+<p class="note capture-hint">The game reloads, then your VCEF file saves to Downloads.</p></div>
+<input id="label" type="hidden">
+<details class="advanced"><summary>Troubleshooting</summary><p class="note">Use these controls only if automatic extraction needs attention.</p>
+<label>Game profile ID <small>optional fallback</small><input id="game-profile-id" inputmode="numeric" placeholder="Numeric ID from your game profile"></label>
+<div class="actions"><button id="start">Start fresh capture</button><button id="stop">Stop</button><button id="cache">Read cached unit config</button></div>
+<details class="manual-review"><summary>Review unmatched cards & export manually</summary><p class="note">Choose names for unmatched IDs, then select the roster entries to export. Final import choices are made in the optimizer.</p>
+<div class="actions"><button id="select-matched">Select matched roster</button><button id="clear-selected">Clear selection</button></div><div id="entries"></div><h2>Captured resources</h2><p id="resources"></p><button id="export">Export checked data</button></details>
+<details class="diagnostics"><summary>Diagnostic export</summary><p class="note">For troubleshooting capture failures. This file contains roster details and technical metadata. It is separate from the VCEF capture you import.</p><button id="diagnostic">Export capture diagnostics</button></details>
+</details>
+</main>
+<script src="names.js"></script><script src="unit-map.js"></script><script src="extract.js"></script><script src="popup.js"></script></body></html>
