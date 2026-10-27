@@ -209,8 +209,9 @@ Older JSON without a profile ID continues to require manual account checks.
 
 CHROME IMPORT WALKTHROUGH
 Import now has a How to import from Chrome button next to Choose Chrome JSON.
-The walkthrough opens automatically on the first visit to Import on a device.
-Close it with Got it, the close button or Escape, and reopen it any time.
+Click the walkthrough link to open a separate, resizable instructions window
+on desktop. Position it beside the game or optimizer. Browsers may open a tab
+instead. Close that window/tab when finished, or reopen it from Import.
 It covers installing or updating the extension, selecting the game account,
 extracting and finding the JSON, profile-ID linking, selecting reviewed levels
 and resources, and applying them. Desktop Chrome is required for extraction;
