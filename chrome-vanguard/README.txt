@@ -117,3 +117,10 @@ captures. The underlying capture schema and review safeguards are unchanged.
 1.0: Continuous popup background with no inset frame or outer padding.
 New captures use .vcef. Install by replacing your existing extension folder,
 then click Reload on chrome://extensions.
+
+1.0.1: During an active extraction, the extension checks the visible game
+for the known green launch-screen Play artwork and tries one canvas click.
+Keep the game tab active and visible. If Play remains, click it manually.
+The visual check processes temporary tab pixels locally in memory; no screen
+images are saved, exported or sent to a server. No additional permissions.
+The game may reject synthetic input; manual Play always remains available.
