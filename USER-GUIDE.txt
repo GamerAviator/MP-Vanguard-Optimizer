@@ -227,7 +227,7 @@ Older complete-roster screenshots use a different order. Use Portrait mode
 for those images and check suggestions before applying levels.
 Existing accounts keep all named levels and history. New cards default to
 unowned (0) until you enter or import a level.
-Chrome Capture 0.1.10 automatically maps ID 51 to Pyro and ID 52 to Viryel.
+Chrome Capture 0.1.11 automatically maps ID 51 to Pyro and ID 52 to Viryel.
 After replacing the extension folder, reload the extension in chrome://extensions
 and use Extract this account to capture a fresh profile and download its JSON.
 
@@ -238,3 +238,18 @@ For example, Pyro 220 to 221 with boost costs 6,208 Order Jewels and 2,508
 Purple Essence. All modes, offer/event/SOV forecasts and plan repricing use
 the same rounded costs. Actual plan Essence savings use the same exact steps;
 general payback benchmarks remain estimates based on the nominal 5% discount.
+
+PROFILE ID ACCOUNT MATCHING (CAPTURE 0.1.11)
+The extension now uses the blue-and-gold Vanguard shield. Download Capture
+0.1.11 from Import, replace the extension folder and reload it in Chrome.
+Each fresh capture includes the game profile ID when an explicit ID field is
+available. If the ID is not detected, enter your numeric game profile ID in
+the extension's optional field before Extract this account. This fallback
+is used for that extraction only; it is not automatically reused on other
+accounts. Conflicting detected/entered IDs require review.
+On the first import, select the correct saved account, check the profile-link
+confirmation and review the data to apply. Later captures with that ID route
+to the linked account even if its player name changes. Unknown IDs cannot
+be applied to accounts linked to another ID. You can manage or remove a link
+using Profile ID on Roster. Links are local and included in account backups.
+Older JSON without a profile ID continues to require manual account checks.
