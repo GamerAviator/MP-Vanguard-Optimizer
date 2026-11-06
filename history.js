@@ -1,8 +1,8 @@
 import {historyChart} from './history-chart.js';
 import {database} from './data.js';
-import {might} from './engine.js';
+import {rosterMight} from './engine.js';
 export function rosterSignature(account){return JSON.stringify(database.map(v=>[v.name,Number(account.levels?.[v.name]||0)]));}
-export function currentMight(account){return Math.round(database.reduce((sum,v)=>sum+Math.round(might(v.rarity,account.levels?.[v.name]||0)*10),0)/10);}
+export function currentMight(account){return rosterMight(account.levels)}
 export function normalizeHistory(history){if(!Array.isArray(history))return [];return history.filter(p=>p&&typeof p.at==='string'&&Number.isFinite(Date.parse(p.at))&&Number.isSafeInteger(p.might)&&p.might>=0&&Number.isSafeInteger(p.owned)&&p.owned>=0&&p.owned<=database.length).map(p=>({at:p.at,might:p.might,owned:p.owned})).sort((a,b)=>Date.parse(a.at)-Date.parse(b.at));}
 export function recordMight(account,now=new Date().toISOString()){
  account.mightHistory=normalizeHistory(account.mightHistory);

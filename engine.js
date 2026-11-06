@@ -1,15 +1,17 @@
 import {database,rarities,essenceCosts} from './data.js';
 export const keys=['pe','Order','Nature','Chaos','regatta','chariot'];
-// Apply the rarity multiplier to the unrounded curve, then floor each card as in game.
-export function might(rarity,l){if(!l)return 0;const r=rarities[rarity];return l<1000?Math.floor((r.factor*l**1.5+r.constant)*r.multiplier):r.base1000+r.postGain*(l-1000)}
+// Keep the underlying curve precise for totals and optimization. Card labels alone round down.
+export function rawMight(rarity,l){if(!l)return 0;const r=rarities[rarity];return l<1000?(r.factor*l**1.5+r.constant)*r.multiplier:r.base1000+r.postGain*(l-1000)}
+export function might(rarity,l){return Math.floor(rawMight(rarity,l))}
+export function rosterMight(levels){return Math.round(database.reduce((sum,v)=>sum+rawMight(v.rarity,levels?.[v.name]||0),0))}
 // The game rounds each resource up on every upgrade after applying Guild Boost.
 // Use integer 95/100 arithmetic so floating-point noise cannot add an extra unit.
 export function cost(l,m=1){const rounded=value=>m===.95?Math.ceil(value*95/100):Math.ceil(value*m);return {j:rounded(l>=1000?65000:Math.floor(2*l**1.5+8)),p:rounded(l%10===0?essenceCosts[Math.min(l,1000)]:0)}}
 export function validate(a){if(a.resources.sov!=null&&(!Number.isSafeInteger(a.resources.sov)||a.resources.sov<0))throw Error('SOVs must be a nonnegative whole number.');for(const k of keys)if(!Number.isSafeInteger(a.resources[k])||a.resources[k]<0)throw Error('Resources must be nonnegative whole numbers.');for(const v of database){const l=a.levels[v.name]||0;if(!Number.isSafeInteger(l)||l<0||l>100000)throw Error('Levels must be whole numbers from 0 to 100,000.');}}
 function setup(a){validate(a);const b={...a.resources};b.pe+=14000*(Math.floor(b.regatta/2500)+Math.floor(b.chariot/2500));return {b,m:a.settings.guildBoost?.95:1,items:database.filter(v=>a.levels[v.name]>0).map(v=>({...v,start:a.levels[v.name],level:a.levels[v.name]}))}}
-// Aggregate in integer tenths so every faction/type subtotal stays exact.
+// Aggregate full-precision values; display rounding happens after the roster is summed.
 export function mightBreakdown(items){
- const factions={},attackTypes={},aggregate=list=>{const start=list.reduce((s,v)=>s+Math.round(might(v.rarity,v.start)*10),0),end=list.reduce((s,v)=>s+Math.round(might(v.rarity,v.level)*10),0);return {startingMight:start/10,finalMight:end/10,mightGained:(end-start)/10};};
+ const factions={},attackTypes={},aggregate=list=>{const start=list.reduce((s,v)=>s+rawMight(v.rarity,v.start),0),end=list.reduce((s,v)=>s+rawMight(v.rarity,v.level),0);return {startingMight:start,finalMight:end,mightGained:end-start};};
  for(const faction of ['Order','Nature','Chaos']){const roster=items.filter(v=>v.faction===faction);factions[faction]={...aggregate(roster),attackTypes:{}};for(const type of ['Melee','Ranged'])factions[faction].attackTypes[type]=aggregate(roster.filter(v=>v.attackType===type));}
  for(const type of ['Melee','Ranged'])attackTypes[type]=aggregate(items.filter(v=>v.attackType===type));
  return {factions,attackTypes,total:aggregate(items)};
@@ -19,20 +21,20 @@ const rawPE=items.reduce((s,v)=>s+(v.p||0),0);let bundles=Math.max(0,Math.ceil((
 for(const f of ['Order','Nature','Chaos'])remaining[f]=b[f]-items.filter(v=>v.faction===f).reduce((s,v)=>s+(v.j||0),0);
 for(const k of keys){remaining[k]=Math.max(0,remaining[k]);spent[k]=a.resources[k]-remaining[k];} // PE spent separately reports actual upgrade consumption
 spent.pe=rawPE;
-const startingMight=Math.round(items.reduce((s,v)=>s+Math.round(might(v.rarity,v.start)*10),0)/10),finalMight=Math.round(items.reduce((s,v)=>s+Math.round(might(v.rarity,v.level)*10),0)/10);
+const startingMight=Math.round(items.reduce((s,v)=>s+rawMight(v.rarity,v.start),0)),finalMight=Math.round(items.reduce((s,v)=>s+rawMight(v.rarity,v.level),0));
 return {mode,status,startingMight,finalMight,breakdown:mightBreakdown(items),mightGained:finalMight-startingMight,levelsGained:items.reduce((s,v)=>s+v.level-v.start,0),upgrades:items.filter(v=>v.level>v.start).map(v=>({...v,gain:might(v.rarity,v.level)-might(v.rarity,v.start)})),spent,remaining,conversions:rg+ch}}
 export function balanced(a){
  const {items,b,m}=setup(a),left={...b};
  for(let n=0;n<1000000;n++){
   const foundation=items.some(v=>v.level<v.target);
-  const faction=Object.fromEntries(['Order','Nature','Chaos'].map(f=>[f,items.filter(v=>v.faction===f).reduce((s,v)=>s+might(v.rarity,v.level),0)]));
+  const faction=Object.fromEntries(['Order','Nature','Chaos'].map(f=>[f,items.filter(v=>v.faction===f).reduce((s,v)=>s+rawMight(v.rarity,v.level),0)]));
   const eligible=items.filter(v=>foundation?v.level<v.target:v.rarity==='Mythic').map(v=>({v,c:cost(v.level,m)})).filter(({v,c})=>c.j<=left[v.faction]+1e-7&&c.p<=left.pe+1e-7);
   if(!eligible.length)break;
   // First strengthen the weakest faction that has an affordable eligible upgrade.
   const weakest=Math.min(...eligible.map(({v})=>faction[v.faction]));
   let best=null,score=-1;
   for(const candidate of eligible){const {v,c}=candidate;if(faction[v.faction]>weakest+1e-7)continue;
-   const delta=might(v.rarity,v.level+1)-might(v.rarity,v.level);let w=1+6*Math.max(0,1-v.level/v.target);
+   const delta=rawMight(v.rarity,v.level+1)-rawMight(v.rarity,v.level);let w=1+6*Math.max(0,1-v.level/v.target);
    if(['Legendary','Mythic'].includes(v.rarity)){const tier=items.filter(x=>['Legendary','Mythic'].includes(x.rarity));const ta=tier.reduce((s,x)=>s+x.level/x.target,0)/tier.length;w*=Math.max(.55,Math.min(1.9,1+1.2*(ta-v.level/v.target)));}
    const efficiency=delta/c.j*w;if(efficiency>score){score=efficiency;best=candidate;}
   }
@@ -40,21 +42,20 @@ export function balanced(a){
  }
  return summary(a,items,b,'Balanced Account','Policy plan');
 }
-// Integer tenths preserve Mythic fractions without floating-point comparisons.
-const units=(rarity,level)=>Math.round(might(rarity,level)*10);
+// Search scores use the same full-precision curve as roster totals.
 function resourceUse(a,result,b){return keys.reduce((t,k)=>t+((k==='pe'?b.pe:a.resources[k])?Math.max(0,result.spent[k])/(k==='pe'?b.pe:a.resources[k]):0),0)}
 // Initial candidates use only might/resource efficiency. They add no balance constraints.
-function efficiencySeed(a,jewelWeight,initialPlan=null,deadline=Infinity){const {items,b,m}=setup(a),left={...b};if(initialPlan){const levels=new Map(initialPlan.upgrades.map(v=>[v.name,v.level]));for(const v of items){const end=levels.get(v.name)||v.start;while(v.level<end){const c=cost(v.level,m);v.j=(v.j||0)+c.j;v.p=(v.p||0)+c.p;left[v.faction]-=c.j;left.pe-=c.p;v.level++;}}}for(let n=0;n<1000000;n++){if(Date.now()>=deadline)break;let best=null,bestScore=-1;for(const v of items){let l=v.level,j=0,p=0;const end=l%10===0?l+10:Math.ceil(l/10)*10;while(l<end){const c=cost(l,m);if(j+c.j>left[v.faction]+1e-7||p+c.p>left.pe+1e-7)break;j+=c.j;p+=c.p;l++;}if(l===v.level)continue;const gain=units(v.rarity,l)-units(v.rarity,v.level);const denominator=(b.pe?p/b.pe:0)+(b[v.faction]?j/b[v.faction]*jewelWeight:0);const score=gain/Math.max(1e-12,denominator);if(score>bestScore){bestScore=score;best={v,l,j,p};}}if(!best)break;const {v,l,j,p}=best;v.level=l;v.j=(v.j||0)+j;v.p=(v.p||0)+p;left[v.faction]-=j;left.pe-=p;}return summary(a,items,b,'Max Might','Searching — best found')}
+function efficiencySeed(a,jewelWeight,initialPlan=null,deadline=Infinity){const {items,b,m}=setup(a),left={...b};if(initialPlan){const levels=new Map(initialPlan.upgrades.map(v=>[v.name,v.level]));for(const v of items){const end=levels.get(v.name)||v.start;while(v.level<end){const c=cost(v.level,m);v.j=(v.j||0)+c.j;v.p=(v.p||0)+c.p;left[v.faction]-=c.j;left.pe-=c.p;v.level++;}}}for(let n=0;n<1000000;n++){if(Date.now()>=deadline)break;let best=null,bestScore=-1;for(const v of items){let l=v.level,j=0,p=0;const end=l%10===0?l+10:Math.ceil(l/10)*10;while(l<end){const c=cost(l,m);if(j+c.j>left[v.faction]+1e-7||p+c.p>left.pe+1e-7)break;j+=c.j;p+=c.p;l++;}if(l===v.level)continue;const gain=rawMight(v.rarity,l)-rawMight(v.rarity,v.level);const denominator=(b.pe?p/b.pe:0)+(b[v.faction]?j/b[v.faction]*jewelWeight:0);const score=gain/Math.max(1e-12,denominator);if(score>bestScore){bestScore=score;best={v,l,j,p};}}if(!best)break;const {v,l,j,p}=best;v.level=l;v.j=(v.j||0)+j;v.p=(v.p||0)+p;left[v.faction]-=j;left.pe-=p;}return summary(a,items,b,'Max Might','Searching — best found')}
 export function* maxMight(a,balancedPlan=balanced(a)){
  const {items,b,m}=setup(a);let bestGain=-1,bestUse=-1,best=items.map(v=>({...v})),nodes=0;
- const startUnits=items.reduce((s,v)=>s+units(v.rarity,v.start),0);
- const displayedGain=g=>Math.round((startUnits+g)/10)-Math.round(startUnits/10);
- function consider(candidate){const g=candidate.reduce((s,v)=>s+units(v.rarity,v.level)-units(v.rarity,v.start),0),result=summary(a,candidate,b,'Max Might','Searching — best found'),use=resourceUse(a,result,b);if(displayedGain(g)>displayedGain(bestGain)||(displayedGain(g)===displayedGain(bestGain)&&use>bestUse)){bestGain=g;bestUse=use;best=candidate.map(v=>({...v}));}}
+ const startPower=items.reduce((s,v)=>s+rawMight(v.rarity,v.start),0);
+ const displayedGain=g=>Math.round(startPower+g)-Math.round(startPower);
+ function consider(candidate){const g=candidate.reduce((s,v)=>s+rawMight(v.rarity,v.level)-rawMight(v.rarity,v.start),0),result=summary(a,candidate,b,'Max Might','Searching — best found'),use=resourceUse(a,result,b);if(displayedGain(g)>displayedGain(bestGain)||(displayedGain(g)===displayedGain(bestGain)&&use>bestUse)){bestGain=g;bestUse=use;best=candidate.map(v=>({...v}));}}
  function planItems(plan){const upgraded=new Map(plan.upgrades.map(v=>[v.name,v]));return items.map(v=>({...v,...(upgraded.get(v.name)||{})}));}
  consider(planItems(balancedPlan));
  yield summary(a,best,b,'Max Might','Searching — best found');
  for(const w of [.1,1,10]){consider(planItems(efficiencySeed(a,w)));yield summary(a,best,b,'Max Might','Searching — best found');}
- const options=items.map(v=>{let j=0,p=0,l=v.start;const o=[{level:l,j,p,gain:0}];while(true){const c=cost(l,m);j+=c.j;p+=c.p;if(j>b[v.faction]+1e-7||p>b.pe+1e-7)break;l++;o.push({level:l,j,p,gain:units(v.rarity,l)-units(v.rarity,v.start)});}return o.reverse();});
+ const options=items.map(v=>{let j=0,p=0,l=v.start;const o=[{level:l,j,p,gain:0}];while(true){const c=cost(l,m);j+=c.j;p+=c.p;if(j>b[v.faction]+1e-7||p>b.pe+1e-7)break;l++;o.push({level:l,j,p,gain:rawMight(v.rarity,l)-rawMight(v.rarity,v.start)});}return o.reverse();});
  // Lagrangian relaxations of the shared essence constraint give admissible upper bounds.
  // Each remaining Vanguard may independently choose its best final level; faction constraints
  // are ignored in these bounds, so they can overestimate but cannot prune a better plan.
