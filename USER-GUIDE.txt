@@ -233,3 +233,7 @@ CAPTURING WITH 1.0.4
 Click Extract this account, wait for the game to reload, then click its green
 Play button. Keep the game open. Capture and the VCEF download continue
 automatically, even if the extension popup closes.
+
+## November Vanguard Grade Up Challenge
+
+Open Event to see progress toward level 350 for Pyro, Viryel, Kaldrek and Drevoss. The budget uses your saved resources, ticket conversions and Guild Boost. Unowned troops must be unlocked separately. All four must be at or above 350 at the end of November 26 UTC; prior upgrades count. Gorrosh is delivered in the following week. The planner does not modify your roster.
