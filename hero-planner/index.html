@@ -26,8 +26,14 @@ input[type=file]{max-width:100%}.status{margin:12px 0 0}.error{color:#fbb6aa}.gr
 <main>
 <h1>Mighty Party Hero Upgrade Planner</h1>
 <section aria-label="Import capture">
-<label for="capture">Import your Squad roster JSON</label>
+<label for="account">Squad account</label>
+<select id="account"><option value="">Choose an account</option></select>
+<p id="storage-status" class="status muted" role="status"></p>
+<label for="account-name">Name for a new account</label>
+<input id="account-name" type="search" maxlength="60" placeholder="Main, Pixi, or another alt">
+<label for="capture">Import a new account’s Squad roster JSON</label>
 <input id="capture" type="file" accept=".json,.vcef,application/json" aria-describedby="status">
+<div class="actions"><button id="refresh-account" type="button" disabled>Update selected account from JSON</button><input id="refresh-capture" type="file" accept=".json,.vcef,application/json" hidden></div>
 <p id="status" class="status muted" role="status">Choose the mp-hero-diagnostics.json file from Hero Diagnostics. Your file is read in this browser.</p>
 <details id="capture-help">
 <summary>How to get the Squad roster file</summary>
@@ -59,6 +65,23 @@ input[type=file]{max-width:100%}.status{margin:12px 0 0}.error{color:#fbb6aa}.gr
 <table class="squad-table" aria-label="Recommended upgrades">
 <thead><tr><th>Hero</th><th>Level</th><th>Might gained</th><th>Souls</th><th>Gold</th></tr></thead>
 <tbody id="squad-upgrades"></tbody>
+</table>
+</div>
+</div>
+<div class="planner" aria-label="Faction quest planner">
+<h2>Faction level-up quests</h2>
+<p class="muted">Enter the level-ups you still need. Finds the lowest gold cost using Common and Rare heroes.</p>
+<div class="grid">
+<div><label for="quest-order">Order level-ups</label><input id="quest-order" type="number" min="0" max="500" step="1" value="15"></div>
+<div><label for="quest-nature">Nature level-ups</label><input id="quest-nature" type="number" min="0" max="500" step="1" value="15"></div>
+<div><label for="quest-chaos">Chaos level-ups</label><input id="quest-chaos" type="number" min="0" max="500" step="1" value="0"></div>
+</div>
+<button id="calculate-quest" type="button">Find cheapest quest upgrades</button>
+<p id="quest-status" class="status" role="status"></p>
+<div id="quest-result" class="squad-result" hidden>
+<table class="squad-table" aria-label="Quest upgrades">
+<thead><tr><th>Hero</th><th>Faction</th><th>Rarity</th><th>Level</th><th>Level-ups</th><th>Souls</th><th>Gold</th></tr></thead>
+<tbody id="quest-upgrades"></tbody>
 </table>
 </div>
 </div>
@@ -222,38 +245,33 @@ function showMatches() {
   showHero();
 }
 
-byId('capture').addEventListener('change', async event => {
+async function importAccountFile(event) {
   const file = event.target.files[0];
   const sequence = ++importSequence;
+  const refreshId = event.target.id === 'refresh-capture' ? replaceId : null;
+  replaceId = null;
+  const accountName = byId('account-name').value.trim();
   if (!file) return;
   const status = byId('status');
   try {
     if (file.size > 10_000_000) throw new Error('Choose a Hero Diagnostics file smaller than 10 MB.');
     const contents = await file.text();
     if (sequence !== importSequence) return;
-    imported = parseRoster(JSON.parse(contents));
-    targets.clear();
-    clearSquadPlan();
-    byId('target-level').dataset.hero = '';
-    byId('gold-discount').value = '0';
-    byId('gold-budget').value = imported.gold ?? '';
-    heroesById = new Map(imported.heroes.map(hero => [hero.id, hero]));
-    const matched = imported.heroes.filter(hero => hero.name).length;
-    status.classList.remove('error');
-    status.textContent = 'Hero roster imported.' + (imported.skipped ? ' Skipped ' + imported.skipped + ' incomplete or duplicate records.' : '');
-    byId('summary').textContent = number.format(imported.heroes.length) + ' heroes · ' + number.format(matched) + ' named in catalog · ' +
-      (imported.gold === null ? 'Gold unavailable' : number.format(imported.gold) + ' gold');
-    byId('roster').hidden = false;
-    byId('search').value = '';
-    byId('hero').value = '';
-    showMatches();
+    const roster = parseRoster(JSON.parse(contents));
+    storeRoster(roster, accountName, refreshId);
+    byId('account-name').value = '';
+    status.textContent = active.name + ' imported.' + (roster.skipped ? ' Skipped ' + roster.skipped + ' incomplete or duplicate records.' : '');
   } catch (error) {
     if (sequence !== importSequence) return;
     status.classList.add('error');
     byId('capture-help').open = true;
     status.textContent = error instanceof SyntaxError ? 'This file is not valid JSON.' : error.message;
+  } finally {
+    if (sequence === importSequence) event.target.value = '';
   }
-});
+}
+byId('capture').addEventListener('change', importAccountFile);
+byId('refresh-capture').addEventListener('change', importAccountFile);
 byId('search').addEventListener('input', showMatches);
 byId('hero').addEventListener('change', showHero);
 byId('download').addEventListener('click', () => {
@@ -365,7 +383,7 @@ function showPlan() {
     remove.type = 'button';
     remove.textContent = 'Remove';
     remove.setAttribute('aria-label', 'Remove ' + (planned.name ?? '#' + id));
-    remove.onclick = () => { targets.delete(id); showPlan(); };
+    remove.onclick = () => { targets.delete(id); showPlan(); saveAccount(); };
     row.append(label, remove);
     list.append(row);
   }
@@ -402,6 +420,7 @@ byId('add-target').addEventListener('click', () => {
   if (byId('add-target').disabled || !heroesById.has(id)) return;
   targets.set(id, Number(byId('target-level').value));
   showPlan();
+  saveAccount();
 });
 const levelMight = {
   common: [100,110,120,130,140,150,170,190,210,230,250,280,310,340,370,400,450,500,550,600,650,750,850,950,1050,1150],
@@ -536,6 +555,179 @@ byId('maximize-might').addEventListener('click', () => {
   byId('squad-result').hidden = false;
 });
 for (const id of ['gold-budget', 'gold-discount', 'squad-cap']) byId(id).addEventListener('input', clearSquadPlan);
+const storageKey = 'mp-squad-accounts-v1';
+const settings = ['gold-budget','gold-discount','squad-cap','quest-order','quest-nature','quest-chaos'];
+const defaults = ['', '0','31','15','15','0'];
+let accounts = [];
+let active = null;
+let replaceId = null;
+
+function saveAccount() {
+  if (active) {
+    active.settings = settings.map(id => byId(id).value);
+    active.targets = [...targets];
+  }
+  try {
+    localStorage.setItem(storageKey, JSON.stringify({accounts, selected: active?.id}));
+    byId('storage-status').textContent = '';
+  } catch {
+    byId('storage-status').textContent = 'Browser storage unavailable. Keep this page open to retain accounts.';
+  }
+}
+
+function selectAccount(account) {
+  active = account;
+  const select = byId('account');
+  select.replaceChildren(new Option('Choose an account', ''));
+  for (const item of accounts) select.add(new Option(item.name, item.id));
+  select.value = account?.id ?? '';
+  byId('refresh-account').disabled = !account;
+  byId('roster').hidden = !account;
+  imported = account?.roster ?? null;
+  if (!imported) return;
+  heroesById = new Map(imported.heroes.map(hero => [hero.id, hero]));
+  targets.clear();
+  for (const [id, level] of account.targets ?? []) {
+    const hero = heroesById.get(id);
+    if (hero && level > hero.level && level <= (hero.rarity === 'common' ? 26 : 31)) targets.set(id, level);
+  }
+  settings.forEach((id, i) => {
+    byId(id).value = account.settings?.[i] ?? (i === 0 ? imported.gold ?? '' : defaults[i]);
+  });
+  byId('target-level').dataset.hero = '';
+  byId('search').value = '';
+  byId('hero').value = '';
+  byId('summary').textContent = fmt(imported.heroes.length) + ' heroes · ' +
+    (imported.gold === null ? 'Captured gold unavailable' : fmt(imported.gold) + ' captured gold');
+  byId('status').classList.remove('error');
+  byId('status').textContent = account.name + ' selected.';
+  clearSquadPlan();
+  clearQuest();
+  showMatches();
+}
+
+function storeRoster(roster, name, refreshId) {
+  let account = accounts.find(item => item.id === refreshId);
+  if (account) {
+    account.roster = roster;
+    account.settings[0] = roster.gold ?? '';
+  } else {
+    if (!name) {
+      let next = accounts.length + 1;
+      do { name = 'Account ' + next++; } while (accounts.some(item => item.name === name));
+    }
+    if (accounts.some(item => item.name.toLowerCase() === name.toLowerCase())) {
+      throw Error('That name is already in use. Select the account and click Update selected account, or enter a different name.');
+    }
+    account = {id: crypto.randomUUID(), name, roster, settings:[], targets:[]};
+    accounts.push(account);
+  }
+  selectAccount(account);
+  saveAccount();
+}
+
+byId('account').addEventListener('change', () => {
+  ++importSequence;
+  replaceId = null;
+  selectAccount(accounts.find(item => item.id === byId('account').value));
+  saveAccount();
+});
+byId('capture').addEventListener('click', () => { replaceId = null; });
+byId('refresh-account').addEventListener('click', () => {
+  if (!active) return;
+  replaceId = active.id;
+  byId('refresh-capture').click();
+});
+
+function cheapestQuest(heroes, faction, count, discount, cap) {
+  let costs = new Float64Array(count + 1).fill(Infinity);
+  let might = new Int32Array(count + 1);
+  costs[0] = 0;
+  const decisions = [];
+  for (const hero of heroes) {
+    if (hero.faction !== faction || (hero.rarity !== 'common' && hero.rarity !== 'rare')) continue;
+    const options = promotionOptions(hero, discount, cap).slice(0, count + 1);
+    if (options.length < 2) continue;
+    const row = new Uint8Array(count + 1);
+    const nextCosts = costs.slice();
+    const nextMight = might.slice();
+    for (let steps = 1; steps < options.length; steps++) {
+      const option = options[steps];
+      for (let total = steps; total <= count; total++) {
+        const gold = costs[total - steps] + option.gold;
+        const gain = might[total - steps] + option.gain;
+        if (Number.isFinite(gold) && (gold < nextCosts[total] || (gold === nextCosts[total] && gain > nextMight[total]))) {
+          nextCosts[total] = gold;
+          nextMight[total] = gain;
+          row[total] = steps;
+        }
+      }
+    }
+    decisions.push({hero, options, row});
+    costs = nextCosts;
+    might = nextMight;
+  }
+  let completed = count;
+  while (!Number.isFinite(costs[completed])) completed--;
+  let steps = completed;
+  const upgrades = [];
+  for (let i = decisions.length - 1; i >= 0 && steps > 0; i--) {
+    const {hero, options, row} = decisions[i];
+    const used = row[steps];
+    if (used) upgrades.push({hero, ...options[used]});
+    steps -= used;
+  }
+  return {completed, gold: costs[completed], upgrades: upgrades.reverse()};
+}
+
+function clearQuest() {
+  byId('quest-result').hidden = true;
+  byId('quest-status').textContent = '';
+}
+
+byId('calculate-quest').addEventListener('click', () => {
+  clearQuest();
+  if (!imported) return;
+  const budget = readWholeNumber('gold-budget', 0, Number.MAX_SAFE_INTEGER);
+  const discount = readWholeNumber('gold-discount', 0, 100);
+  const cap = readWholeNumber('squad-cap', 1, 31);
+  const factions = ['order','nature','chaos'];
+  const counts = factions.map(faction => readWholeNumber('quest-' + faction, 0, 500));
+  const status = byId('quest-status');
+  if ([budget, discount, cap, ...counts].includes(null) || !counts.some(Boolean)) {
+    status.textContent = 'Enter valid gold settings and at least one faction target from 1 to 500.';
+    return;
+  }
+  const plans = factions.flatMap((faction, i) => counts[i] ? [{
+    faction, count: counts[i], ...cheapestQuest(imported.heroes, faction, counts[i], discount, cap)
+  }] : []);
+  const gold = plans.reduce((sum, plan) => sum + plan.gold, 0);
+  status.textContent = plans.map(plan => plan.faction[0].toUpperCase() + plan.faction.slice(1) + ' ' + plan.completed + '/' + plan.count).join(' · ') +
+    ' level-ups. ' + fmt(gold) + ' gold needed. ' + (gold > budget ? 'Short ' + fmt(gold - budget) + ' gold.' : fmt(budget - gold) + ' gold left.') +
+    (plans.some(plan => plan.completed < plan.count) ? ' Souls or level limits prevented a full plan.' : '');
+  const body = byId('quest-upgrades');
+  body.replaceChildren();
+  for (const item of plans.flatMap(plan => plan.upgrades)) {
+    const row = document.createElement('tr');
+    for (const value of [item.hero.name ?? 'Hero #' + item.hero.id, item.hero.faction, item.hero.rarity,
+        item.hero.level + ' → ' + item.level, item.level - item.hero.level, fmt(item.souls), fmt(item.gold)]) {
+      const cell = document.createElement('td');
+      cell.textContent = value;
+      row.append(cell);
+    }
+    body.append(row);
+  }
+  byId('quest-result').hidden = !body.children.length;
+});
+for (const id of settings) byId(id).addEventListener('input', () => { clearQuest(); saveAccount(); });
+
+try {
+  const saved = JSON.parse(localStorage.getItem(storageKey));
+  accounts = Array.isArray(saved?.accounts) ? saved.accounts.filter(item => Array.isArray(item?.roster?.heroes)) : [];
+  selectAccount(accounts.find(item => item.id === saved?.selected) ?? accounts[0]);
+} catch {
+  selectAccount(null);
+}
 </script>
 </body>
 </html>
