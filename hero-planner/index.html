@@ -68,6 +68,27 @@ input[type=file]{max-width:100%}.status{margin:12px 0 0}.error{color:#fbb6aa}.gr
 </table>
 </div>
 </div>
+<div class="planner" aria-label="Warlord level goal">
+<h2>Next Warlord Level</h2>
+<p class="muted">Enter the next Might requirement from the game. Add your eight strongest heroes with their displayed Might, plus any bench heroes you want to consider. The plan uses the gold settings above.</p>
+<label for="warlord-target">Target squad Might</label>
+<input id="warlord-target" type="number" min="1" max="1000000" step="1" placeholder="e.g. 24000">
+<label for="warlord-hero">Hero to consider</label>
+<select id="warlord-hero"></select>
+<label for="warlord-might">Current hero Might</label>
+<input id="warlord-might" type="number" min="1" max="1000000" step="1">
+<button id="warlord-add" type="button">Save hero Might</button>
+<p id="warlord-count" class="status muted"></p>
+<ul id="warlord-candidates"></ul>
+<button id="warlord-calculate" type="button">Plan Warlord upgrades</button>
+<p id="warlord-status" class="status" role="status"></p>
+<div id="warlord-result" class="squad-result" hidden>
+<table class="squad-table" aria-label="Eight heroes to field">
+<thead><tr><th>Hero to field</th><th>Faction</th><th>Type</th><th>Level</th><th>Final Might</th><th>Souls</th><th>Gold</th></tr></thead>
+<tbody id="warlord-upgrades"></tbody>
+</table>
+</div>
+</div>
 <div class="planner" aria-label="Faction quest planner">
 <h2>Faction level-up quests</h2>
 <p class="muted">Enter the level-ups you still need. Finds the lowest gold cost using Common and Rare heroes.</p>
@@ -565,8 +586,8 @@ byId('maximize-might').addEventListener('click', () => {
 });
 for (const id of ['gold-budget', 'gold-discount', 'squad-cap']) byId(id).addEventListener('input', clearSquadPlan);
 const storageKey = 'mp-squad-accounts-v1';
-const settings = ['gold-budget','gold-discount','squad-cap','quest-order','quest-nature','quest-chaos'];
-const defaults = ['', '0','31','15','15','0'];
+const settings = ['gold-budget','gold-discount','squad-cap','quest-order','quest-nature','quest-chaos','warlord-target'];
+const defaults = ['', '0','31','15','15','0',''];
 let accounts = [];
 let active = null;
 let replaceId = null;
@@ -575,6 +596,10 @@ function saveAccount() {
   if (active) {
     active.settings = settings.map(id => byId(id).value);
     active.targets = [...targets];
+    active.warlordCandidates = Array.from(warlordCandidates, ([id, might]) => {
+      const hero = heroesById.get(id);
+      return [id, might, hero.level, hero.rebirths];
+    });
   }
   try {
     localStorage.setItem(storageKey, JSON.stringify({accounts, selected: active?.id}));
@@ -616,6 +641,7 @@ function selectAccount(account) {
   byId('status').textContent = account.name + ' selected.';
   clearSquadPlan();
   clearQuest();
+  loadWarlordAccount(account);
   showMatches();
 }
 
@@ -733,6 +759,149 @@ byId('calculate-quest').addEventListener('click', () => {
   byId('quest-result').hidden = !body.children.length;
 });
 for (const id of settings) byId(id).addEventListener('input', () => { clearQuest(); saveAccount(); });
+
+function planWarlord(candidates, target, budget, discount, cap) {
+  // Keep the cheapest way to reach each total for each possible lineup size.
+  let states = Array.from({length: 9}, () => new Map());
+  states[0].set(0, {might: 0, gold: 0, previous: null});
+  for (const {hero, might} of candidates) {
+    const options = promotionOptions(hero, discount, cap);
+    const choices = options.length ? options : [{level: hero.level, gain: 0, souls: 0, gold: 0}];
+    const next = states.map(entries => new Map(entries));
+    for (let size = 0; size < 8; size++) {
+      for (const state of states[size].values()) {
+        for (const option of choices) {
+          const gold = state.gold + option.gold;
+          if (gold > budget) break;
+          const total = state.might + might + option.gain;
+          const key = Math.min(target, total);
+          const existing = next[size + 1].get(key);
+          if (!existing || gold < existing.gold || (gold === existing.gold && total > existing.might)) {
+            next[size + 1].set(key, {gold, might: total, previous: state, pick: {hero, might, ...option}});
+          }
+        }
+      }
+    }
+    // A higher score at equal or lower cost dominates a smaller score for the same number of slots.
+    states = next.map(entries => {
+      let cheapest = Infinity;
+      return new Map([...entries].sort(([a], [b]) => b - a).filter(([, state]) => {
+        if (state.gold >= cheapest) return false;
+        cheapest = state.gold;
+        return true;
+      }));
+    });
+  }
+  const best = states[8].values().next().value;
+  if (!best) return null;
+  const lineup = [];
+  for (let state = best; state.pick; state = state.previous) lineup.push(state.pick);
+  lineup.sort((a, b) => (b.might + b.gain) - (a.might + a.gain) || a.hero.id - b.hero.id);
+  return {lineup, gold: best.gold, might: best.might};
+}
+
+let warlordCandidates = new Map();
+
+function clearWarlordPlan() {
+  byId('warlord-result').hidden = true;
+  byId('warlord-status').textContent = '';
+}
+
+function renderWarlordCandidates() {
+  const list = byId('warlord-candidates');
+  list.replaceChildren();
+  for (const [id, might] of warlordCandidates) {
+    const hero = heroesById.get(id);
+    const row = document.createElement('li');
+    const label = document.createElement('span');
+    label.textContent = (hero.name ?? '#' + id) + ' · ' + fmt(might) + ' Might';
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.textContent = 'Remove';
+    remove.setAttribute('aria-label', 'Remove ' + (hero.name ?? '#' + id));
+    remove.onclick = () => {
+      warlordCandidates.delete(id);
+      renderWarlordCandidates();
+      clearWarlordPlan();
+      saveAccount();
+    };
+    row.append(label, remove);
+    list.append(row);
+  }
+  byId('warlord-count').textContent = fmt(warlordCandidates.size) + ' candidates. Add at least eight.';
+}
+
+function loadWarlordAccount(account) {
+  warlordCandidates = new Map((account.warlordCandidates ?? []).filter(([id, might, level, rebirths]) =>
+    heroesById.get(id)?.level === level && gameInteger(might) && heroesById.get(id)?.rebirths === rebirths
+  ).map(([id, might]) => [id, might]));
+  const picker = byId('warlord-hero');
+  picker.replaceChildren(new Option('Choose a hero', ''));
+  const heroes = [...imported.heroes].sort((a,b) => (a.name ?? '').localeCompare(b.name ?? '') || a.id - b.id);
+  for (const hero of heroes) picker.add(new Option([hero.name ?? '#' + hero.id, heroLabel(hero.faction), heroLabel(hero.attackType)].join(' · '), hero.id));
+  byId('warlord-might').value = '';
+  renderWarlordCandidates();
+  clearWarlordPlan();
+}
+
+byId('warlord-hero').addEventListener('change', () => {
+  byId('warlord-might').value = warlordCandidates.get(Number(byId('warlord-hero').value)) ?? '';
+});
+
+byId('warlord-add').addEventListener('click', () => {
+  const id = Number(byId('warlord-hero').value);
+  const might = readWholeNumber('warlord-might', 1, 1000000);
+  clearWarlordPlan();
+  if (!heroesById.has(id) || might === null) {
+    byId('warlord-status').textContent = 'Choose a hero and enter their displayed Might.';
+    return;
+  }
+  if (!warlordCandidates.has(id) && warlordCandidates.size >= 24) {
+    byId('warlord-status').textContent = 'Use up to 24 candidates. Remove one to add another.';
+    return;
+  }
+  warlordCandidates.set(id, might);
+  renderWarlordCandidates();
+  saveAccount();
+});
+
+byId('warlord-calculate').addEventListener('click', () => {
+  clearWarlordPlan();
+  const target = readWholeNumber('warlord-target', 1, 1000000);
+  const budget = readWholeNumber('gold-budget', 0, Number.MAX_SAFE_INTEGER);
+  const discount = readWholeNumber('gold-discount', 0, 100);
+  const cap = readWholeNumber('squad-cap', 1, 31);
+  const status = byId('warlord-status');
+  if (warlordCandidates.size < 8 || [target, budget, discount, cap].includes(null)) {
+    status.textContent = 'Add at least eight heroes and enter the next Might threshold and valid gold settings.';
+    return;
+  }
+  const candidates = Array.from(warlordCandidates, ([id, might]) => ({hero: heroesById.get(id), might}));
+  const plan = planWarlord(candidates, target, budget, discount, cap);
+  const current = candidates.map(item => item.might).sort((a,b) => b - a).slice(0,8).reduce((sum, might) => sum + might, 0);
+  const short = Math.max(0, target - plan.might);
+  status.textContent = 'Best current eight: ' + fmt(current) + ' Might. Field the eight below for an estimated ' + fmt(plan.might) +
+    ' Might. ' + (short ? 'Short ' + fmt(short) + ' Might.' : 'Reaches the ' + fmt(target) + ' target.') +
+    ' Spend ' + fmt(plan.gold) + ' gold; ' + fmt(budget - plan.gold) + ' left.';
+  const body = byId('warlord-upgrades');
+  body.replaceChildren();
+  for (const item of plan.lineup) {
+    const row = document.createElement('tr');
+    for (const value of [item.hero.name ?? '#' + item.hero.id, heroLabel(item.hero.faction), heroLabel(item.hero.attackType),
+        item.gain ? item.hero.level + ' → ' + item.level : 'Keep at ' + item.level,
+        fmt(item.might + item.gain), fmt(item.souls), fmt(item.gold)]) {
+      const cell = document.createElement('td');
+      cell.textContent = value;
+      row.append(cell);
+    }
+    body.append(row);
+  }
+  byId('warlord-result').hidden = false;
+});
+
+for (const id of ['warlord-target','gold-budget','gold-discount','squad-cap']) {
+  byId(id).addEventListener('input', clearWarlordPlan);
+}
 
 try {
   const saved = JSON.parse(localStorage.getItem(storageKey));
