@@ -1,5 +1,5 @@
 import {database} from './data.js';
-import {cost,rosterMight,validate} from './engine.js';
+import {cost,might,validate} from './engine.js';
 
 export const GRADE_UP=Object.freeze({target:350,reward:'Gorrosh',names:Object.freeze(['Pyro','Viryel','Kaldrek','Drevoss']),start:Date.parse('2026-11-13T00:00:00Z'),end:Date.parse('2026-11-27T00:00:00Z')});
 const currencies=['pe','Order','Nature','Chaos'];
@@ -34,6 +34,8 @@ export function mountGradeUpCountdown(container,onPhaseChange){
   document.removeEventListener('visibilitychange',update);
  };
 }
+// The Vanguard screen total is the sum of the whole numbers on its cards.
+const eventRosterMight=levels=>database.reduce((total,v)=>total+might(v.rarity,levels[v.name]||0),0);
 export function gradeUpPlan(account,now=Date.now()){
  validate(account);
  const target=GRADE_UP.target,multiplier=account.settings.guildBoost?.95:1;
@@ -50,10 +52,10 @@ export function gradeUpPlan(account,now=Date.now()){
  const available=Object.fromEntries(currencies.map(k=>[k,account.resources[k]+(k==='pe'?ticketEssence:0)]));
  const shortfall=Object.fromEntries(currencies.map(k=>[k,Math.max(0,required[k]-available[k])]));
  const completed=cards.filter(v=>v.ready).length,unowned=cards.filter(v=>!v.owned).length;
- const startingMight=rosterMight(account.levels);
+ const startingMight=eventRosterMight(account.levels);
  const projectedLevels={...account.levels};
  for(const {name,level} of cards)projectedLevels[name]=Math.max(level,target);
- const projectedMight=rosterMight(projectedLevels);
+ const projectedMight=eventRosterMight(projectedLevels);
  return {cards,required,available,shortfall,ticketEssence,completed,unowned,startingMight,projectedMight,mightGained:projectedMight-startingMight,affordable:Object.values(shortfall).every(n=>!n),phase:campaignPhase(now)};
 }
 
@@ -79,7 +81,7 @@ export function gradeUpHTML(account,now=Date.now()){
  ${p.phase==='ended'?'':`<section class="card grade-might" aria-labelledby="grade-might-title">
  <h3 id="grade-might-title">Projected Vanguard Might</h3>
  <dl><div><dt>Current total</dt><dd>${fmt(p.startingMight)}</dd></div><div><dt>After required upgrades</dt><dd>${fmt(p.projectedMight)}</dd></div><div><dt>Might gained</dt><dd>+${fmt(p.mightGained)}</dd></div></dl>
- <p class="help">Brings each event troop up to level ${GRADE_UP.target} if needed. ${p.unowned?'Assumes missing event troops are unlocked first. ':''}The Gorrosh reward is excluded.</p>
+ <p class="help">Brings each event troop up to level ${GRADE_UP.target} if needed. ${p.unowned?'Assumes missing event troops are unlocked first. ':''}Totals add the might shown on each card. The Gorrosh reward is excluded.</p>
  </section>`}
  <div class="grade-troops">${p.cards.map(v=>`<article class="card grade-troop"><span class="grade-troop-state ${v.ready?'ready':''}">${v.ready?'✓ At target':v.owned?'Below target':'Unlock first'}</span><div class="grade-troop-identity">${gradePortraitHTML(v)}<div><h3>${v.name}</h3><span class="${v.faction.toLowerCase()}">${v.faction}</span></div></div><strong class="grade-level">${v.owned?`Level ${fmt(v.level)}`:'Unowned'}</strong>${v.ready?'':`<p>${v.owned?`${350-v.level} levels to go`:spending?'Costs below assume unlocking at level 1':'Unlock required'}${spending?`<br>${fmt(v.essence)} essence · ${fmt(v.jewels)} ${v.faction} Jewels`:''}</p>`}</article>`).join('')}</div>
  ${spending?`<section class="card grade-budget"><div class="heading"><div><span class="eyebrow">UPGRADE BUDGET</span><h3>What it takes to finish</h3></div><span class="context-chip">Guild Boost ${account.settings.guildBoost?'ON':'OFF'}</span></div><div class="tablewrap"><table><thead><tr><th scope="col">Resource</th><th scope="col">Required</th><th scope="col">Available</th><th scope="col">Still needed</th></tr></thead><tbody>${currencies.map(k=>`<tr><th scope="row">${labels[k]}</th><td>${fmt(p.required[k])}</td><td>${fmt(p.available[k])}</td><td class="${p.shortfall[k]?'grade-shortfall':''}">${fmt(p.shortfall[k])}</td></tr>`).join('')}</tbody></table></div><p class="help">Available essence includes ${fmt(p.ticketEssence)} from full ticket bundles. Estimates use saved balances${p.unowned?' and exclude any costs to unlock troops':''}.</p></section>`:''}
