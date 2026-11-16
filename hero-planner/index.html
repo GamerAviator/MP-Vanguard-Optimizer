@@ -21,9 +21,19 @@ input[type=file]{max-width:100%}.status{margin:12px 0 0}.error{color:#fbb6aa}.gr
 <main>
 <h1>Mighty Party Hero Upgrade Planner</h1>
 <section aria-label="Import capture">
-<label for="capture">Choose your Hero Diagnostics JSON</label>
-<input id="capture" type="file" accept=".json,application/json" aria-describedby="status">
-<p id="status" class="status muted" role="status">Use a Vanguard Capture 1.0.7 hero roster export. The file is read in this browser.</p>
+<label for="capture">Import your Squad roster JSON</label>
+<input id="capture" type="file" accept=".json,.vcef,application/json" aria-describedby="status">
+<p id="status" class="status muted" role="status">Choose the mp-hero-diagnostics.json file from Hero Diagnostics. Your file is read in this browser.</p>
+<details id="capture-help">
+<summary>How to get the Squad roster file</summary>
+<ol>
+<li><a href="../downloads/MP-Vanguard-Capture-1.0.9.zip" download>Download Vanguard Capture 1.0.9</a>. Unzip it and update your unpacked extension, then click Reload at <code>chrome://extensions</code>.</li>
+<li>On your Mighty Party tab, choose <strong>Hero Diagnostics → Start hero capture</strong>.</li>
+<li>After the game reloads, click <strong>Play</strong>. Wait until the extension says <strong>Hero roster captured</strong> or <strong>Hero catalog candidates captured</strong>.</li>
+<li>Click <strong>Download diagnostics</strong> under Hero Diagnostics and load the resulting JSON here.</li>
+</ol>
+<p class="muted">The extension’s Extract this account button creates a .vcef file for the Vanguard Optimizer.</p>
+</details>
 </section>
 <section id="roster" hidden aria-label="Hero roster">
 <h2>Your roster</h2>
@@ -86,12 +96,15 @@ let importSequence = 0;
 let heroesById = new Map();
 
 function parseRoster(source) {
+  if (source?.format === 'mp-vanguard-extract') {
+    throw new Error('This is a Vanguard export. Open Hero Diagnostics in Vanguard Capture and use Download diagnostics to get your Squad roster.');
+  }
   if (source?.format !== 'mp-hero-diagnostics' || !Array.isArray(source.reports)) {
     throw new Error('Choose a Hero Diagnostics JSON file from Vanguard Capture.');
   }
   const roster = [...source.reports].reverse().find(report => report?.endpoint === '/gs_api/profile/load' &&
     report.roster?.path === 'result.data.ArmyBit.data.collection' && Array.isArray(report.roster.heroes))?.roster;
-  if (!roster) throw new Error('The file is missing the hero roster. Capture again with version 1.0.7.');
+  if (!roster) throw new Error('This diagnostics file has no Squad roster. Start hero capture, click Play after the reload, and wait for Hero roster captured before downloading.');
   const heroes = [];
   const used = new Set();
   let skipped = gameInteger(roster.omitted) ? roster.omitted : 0;
@@ -216,6 +229,7 @@ byId('capture').addEventListener('change', async event => {
   } catch (error) {
     if (sequence !== importSequence) return;
     status.classList.add('error');
+    byId('capture-help').open = true;
     status.textContent = error instanceof SyntaxError ? 'This file is not valid JSON.' : error.message;
   }
 });
