@@ -15,6 +15,11 @@ input[type=file]{max-width:100%}.status{margin:12px 0 0}.error{color:#fbb6aa}.gr
 .planner{margin:18px 0;padding:16px;background:#11172a;border-radius:9px}
 .planner input{width:100%;max-width:220px;padding:9px;border:1px solid #566380;border-radius:7px;background:#1b2235;color:inherit}
 .planner dl,.planner ul{padding-left:22px}.planner li{margin:8px 0}.planner li button{margin:3px 8px;font-size:14px}
+.squad-result{overflow-x:auto;margin-top:14px}
+.squad-table{border-collapse:collapse;width:100%;text-align:left;font-variant-numeric:tabular-nums}
+.squad-table th,.squad-table td{padding:8px;border-bottom:1px solid #36415c}
+.squad-table th:not(:first-child),.squad-table td:not(:first-child){text-align:right;white-space:nowrap}
+.manual-heading{margin-top:22px}
 </style>
 </head>
 <body>
@@ -38,6 +43,26 @@ input[type=file]{max-width:100%}.status{margin:12px 0 0}.error{color:#fbb6aa}.gr
 <section id="roster" hidden aria-label="Hero roster">
 <h2>Your roster</h2>
 <p id="summary" class="muted"></p>
+<div class="planner" aria-label="Max Squad Might">
+<h2>Max Squad Might</h2>
+<div class="grid">
+<div><label for="gold-budget">Gold budget</label><input id="gold-budget" type="number" min="0" step="1"></div>
+<div><label for="gold-discount">Gold discount (%)</label><input id="gold-discount" type="number" min="0" max="100" step="1" value="0"></div>
+<div><label for="squad-cap">Level limit</label><input id="squad-cap" type="number" min="1" max="31" step="1" value="31"></div>
+</div>
+<p class="muted">Estimates use published promotion costs through level 26 for Common and 31 for Rare, Epic, and Legendary. Check your account’s gold discount and in-game level limit.</p>
+
+<p class="muted">Find level upgrades that increase total Might across your roster. Estimates use <a href="https://mightyparty.wiki.gg/wiki/Might">published Might gains</a> and assume your Rebirths and Soulbinds stay as imported.</p>
+<button id="maximize-might" type="button">Calculate best upgrades</button>
+<p id="squad-status" class="status" role="status"></p>
+<div id="squad-result" class="squad-result" hidden>
+<table class="squad-table" aria-label="Recommended upgrades">
+<thead><tr><th>Hero</th><th>Level</th><th>Might gained</th><th>Souls</th><th>Gold</th></tr></thead>
+<tbody id="squad-upgrades"></tbody>
+</table>
+</div>
+</div>
+<h2 class="manual-heading">Plan individual heroes</h2>
 <label for="search">Find a hero by name or ID</label>
 <input id="search" type="search">
 <label for="hero">Hero</label>
@@ -53,11 +78,6 @@ input[type=file]{max-width:100%}.status{margin:12px 0 0}.error{color:#fbb6aa}.gr
 </dl>
 <div class="planner" aria-label="Upgrade planner">
 <h2>Upgrade planner</h2>
-<div class="grid">
-<div><label for="gold-budget">Gold budget</label><input id="gold-budget" type="number" min="0" step="1"></div>
-<div><label for="gold-discount">Gold discount (%)</label><input id="gold-discount" type="number" min="0" max="100" step="1" value="0"></div>
-</div>
-<p class="muted">Estimates use published promotion costs through level 26 for Common and 31 for Rare, Epic, and Legendary. Check your account’s gold discount and in-game level limit.</p>
 <div id="hero-plan" hidden>
 <label for="target-level">Target level</label>
 <input id="target-level" type="number" min="2" max="31" step="1">
@@ -213,6 +233,7 @@ byId('capture').addEventListener('change', async event => {
     if (sequence !== importSequence) return;
     imported = parseRoster(JSON.parse(contents));
     targets.clear();
+    clearSquadPlan();
     byId('target-level').dataset.hero = '';
     byId('gold-discount').value = '0';
     byId('gold-budget').value = imported.gold ?? '';
@@ -382,6 +403,139 @@ byId('add-target').addEventListener('click', () => {
   targets.set(id, Number(byId('target-level').value));
   showPlan();
 });
+const levelMight = {
+  common: [100,110,120,130,140,150,170,190,210,230,250,280,310,340,370,400,450,500,550,600,650,750,850,950,1050,1150],
+  rare: [120,135,150,170,185,200,230,260,290,320,350,400,450,500,550,600,680,760,840,920,1000,1140,1280,1420,1560,1700,1812,1924,2036,2148,2260],
+  epic: [200,230,260,290,320,350,390,430,470,510,550,620,690,760,830,900,1020,1140,1260,1380,1500,1700,1900,2100,2300,2500,2665,2830,2995,3160,3325],
+  legendary: [350,390,430,470,510,550,620,690,760,830,900,1010,1120,1230,1340,1450,1630,1810,1990,2170,2350,2630,2910,3190,3470,3750,3998,4246,4494,4742,4990]
+};
+
+function promotionOptions(hero, discount, cap) {
+  const levels = levelMight[hero.rarity];
+  const base = levels?.[hero.level - 1];
+  if (base === undefined) return [];
+  const options = [{ level: hero.level, gold: 0, souls: 0, gain: 0 }];
+  let gold = 0;
+  let souls = 0;
+  for (let level = hero.level; level < Math.min(cap, levels.length); level++) {
+    const step = nextPromotion(hero.rarity, level, discount);
+    if (!step || souls + step.souls > hero.souls) break;
+    souls += step.souls;
+    gold += step.gold;
+    options.push({ level: level + 1, gold, souls, gain: levels[level] - base });
+  }
+  return options;
+}
+
+function optimizeSquad(heroes, budget, discount, cap) {
+  const candidates = heroes.map(hero => ({ hero, options: promotionOptions(hero, discount, cap) }))
+    .filter(({ options }) => options.length > 1 && options[1].gold <= budget);
+  const reachableCost = candidates.reduce((sum, { options }) => sum + options.at(-1).gold, 0);
+  const effectiveBudget = Math.min(budget, reachableCost);
+  const unit = Math.max(1, Math.ceil(effectiveBudget / 8000));
+  const slots = Math.floor(effectiveBudget / unit);
+  // Round each option up so every reconstructed plan fits the actual budget.
+  let score = new Int32Array(slots + 1);
+  let spend = new Float64Array(slots + 1);
+  const decisions = [];
+  const costs = [];
+
+  for (const { options } of candidates) {
+    const weights = options.map(option => Math.ceil(option.gold / unit));
+    const row = new Uint8Array(slots + 1);
+    const nextScore = score.slice();
+    const nextSpend = spend.slice();
+    for (let i = 1; i < options.length; i++) {
+      const option = options[i];
+      for (let slot = weights[i]; slot <= slots; slot++) {
+        const previous = slot - weights[i];
+        const gain = score[previous] + option.gain;
+        const gold = spend[previous] + option.gold;
+        if (gain > nextScore[slot] || (gain === nextScore[slot] && gold > nextSpend[slot])) {
+          nextScore[slot] = gain;
+          nextSpend[slot] = gold;
+          row[slot] = i;
+        }
+      }
+    }
+    score = nextScore;
+    spend = nextSpend;
+    decisions.push(row);
+    costs.push(weights);
+  }
+
+  let slot = slots;
+  const selected = new Uint8Array(candidates.length);
+  for (let i = candidates.length - 1; i >= 0; i--) {
+    selected[i] = decisions[i][slot];
+    slot -= costs[i][selected[i]];
+  }
+
+  // Use exact leftover gold to recover affordable increments lost to rounding.
+  let goldLeft = budget - spend[slots];
+  for (;;) {
+    let best = null;
+    for (let i = 0; i < candidates.length; i++) {
+      const { options } = candidates[i];
+      const current = options[selected[i]];
+      for (let j = selected[i] + 1; j < options.length; j++) {
+        const cost = options[j].gold - current.gold;
+        if (cost > goldLeft) break;
+        const gain = options[j].gain - current.gain;
+        const value = cost === 0 ? Infinity : gain / cost;
+        if (!best || value > best.value || (value === best.value && gain > best.gain)) {
+          best = { i, j, cost, gain, value };
+        }
+      }
+    }
+    if (!best) break;
+    selected[best.i] = best.j;
+    goldLeft -= best.cost;
+  }
+  return candidates.flatMap(({ hero, options }, i) => selected[i] ? [{ hero, ...options[selected[i]] }] : [])
+    .sort((a, b) => b.gain - a.gain || a.hero.id - b.hero.id);
+}
+
+function clearSquadPlan() {
+  byId('squad-result').hidden = true;
+  byId('squad-status').textContent = '';
+}
+
+byId('maximize-might').addEventListener('click', () => {
+  clearSquadPlan();
+  if (!imported) return;
+  const budget = readWholeNumber('gold-budget', 0, Number.MAX_SAFE_INTEGER);
+  const discount = readWholeNumber('gold-discount', 0, 100);
+  const cap = readWholeNumber('squad-cap', 1, 31);
+  const status = byId('squad-status');
+  if (budget === null || discount === null || cap === null) {
+    status.textContent = 'Enter a gold budget, a discount from 0% to 100%, and a level limit from 1 to 31.';
+    return;
+  }
+  const plan = optimizeSquad(imported.heroes, budget, discount, cap);
+  if (!plan.length) {
+    status.textContent = 'No upgrades fit the current soul balances, gold budget, and level limit.';
+    return;
+  }
+  const gain = plan.reduce((sum, upgrade) => sum + upgrade.gain, 0);
+  const gold = plan.reduce((sum, upgrade) => sum + upgrade.gold, 0);
+  status.textContent = '+' + fmt(gain) + ' estimated Might across ' + fmt(plan.length) + ' heroes. ' +
+    fmt(gold) + ' gold to spend, ' + fmt(budget - gold) + ' gold left.';
+  const body = byId('squad-upgrades');
+  body.replaceChildren();
+  for (const item of plan) {
+    const row = document.createElement('tr');
+    for (const value of [item.hero.name ?? 'Hero #' + item.hero.id, item.hero.level + ' → ' + item.level,
+        '+' + fmt(item.gain), fmt(item.souls), fmt(item.gold)]) {
+      const cell = document.createElement('td');
+      cell.textContent = value;
+      row.append(cell);
+    }
+    body.append(row);
+  }
+  byId('squad-result').hidden = false;
+});
+for (const id of ['gold-budget', 'gold-discount', 'squad-cap']) byId(id).addEventListener('input', clearSquadPlan);
 </script>
 </body>
 </html>
