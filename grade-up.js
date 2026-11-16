@@ -38,11 +38,11 @@ export function gradeUpPlan(account,now=Date.now()){
  validate(account);
  const target=GRADE_UP.target,multiplier=account.settings.guildBoost?.95:1;
  const cards=GRADE_UP.names.map(name=>{
-  const {faction}=database.find(v=>v.name===name),level=account.levels[name]||0;
+  const {faction,portrait,portraitRegion}=database.find(v=>v.name===name),level=account.levels[name]||0;
   let essence=0,jewels=0;
   // An unowned troop must be unlocked before paying the level 1 onward costs.
   for(let l=Math.max(1,level);l<target;l++){const {p,j}=cost(l,multiplier);essence+=p;jewels+=j;}
-  return {name,faction,level,essence,jewels,ready:level>=target,owned:level>0};
+  return {name,faction,portrait,portraitRegion,level,essence,jewels,ready:level>=target,owned:level>0};
  });
  const required=Object.fromEntries(currencies.map(k=>[k,0]));
  for(const v of cards){required.pe+=v.essence;required[v.faction]+=v.jewels;}
@@ -58,6 +58,13 @@ export function gradeUpPlan(account,now=Date.now()){
 }
 
 const fmt=n=>n.toLocaleString();
+function gradePortraitHTML({portrait,portraitRegion:r}){
+ if(!portrait)return '';
+ // Card screenshots include game UI; use the same crop as the roster.
+ return r
+  ? `<span class="grade-portrait" aria-hidden="true" style="background-image:url('${portrait}');background-size:${100/r.width}% ${100/r.height}%;background-position:${100*r.x/(1-r.width)}% ${100*r.y/(1-r.height)}%"></span>`
+  : `<img class="grade-portrait" src="${portrait}" alt="" width="46" height="46">`;
+}
 export function gradeUpHTML(account,now=Date.now()){
  const p=gradeUpPlan(account,now),phaseLabel={upcoming:'Upcoming',active:'Campaign live',ended:'Campaign ended'}[p.phase];
  const state=p.phase==='ended'?'Saved levels shown':p.completed===4?'All four troops meet the target':p.unowned?'Unlock required troops first':p.affordable?'Your budget covers all remaining upgrades':'More resources needed';
@@ -74,7 +81,7 @@ export function gradeUpHTML(account,now=Date.now()){
  <dl><div><dt>Current total</dt><dd>${fmt(p.startingMight)}</dd></div><div><dt>After required upgrades</dt><dd>${fmt(p.projectedMight)}</dd></div><div><dt>Might gained</dt><dd>+${fmt(p.mightGained)}</dd></div></dl>
  <p class="help">Brings each event troop up to level ${GRADE_UP.target} if needed. ${p.unowned?'Assumes missing event troops are unlocked first. ':''}The Gorrosh reward is excluded.</p>
  </section>`}
- <div class="grade-troops">${p.cards.map(v=>`<article class="card grade-troop"><span class="grade-troop-state ${v.ready?'ready':''}">${v.ready?'✓ At target':v.owned?'Below target':'Unlock first'}</span><h3>${v.name}</h3><span class="${v.faction.toLowerCase()}">${v.faction}</span><strong class="grade-level">${v.owned?`Level ${fmt(v.level)}`:'Unowned'}</strong>${v.ready?'':`<p>${v.owned?`${350-v.level} levels to go`:spending?'Costs below assume unlocking at level 1':'Unlock required'}${spending?`<br>${fmt(v.essence)} essence · ${fmt(v.jewels)} ${v.faction} Jewels`:''}</p>`}</article>`).join('')}</div>
+ <div class="grade-troops">${p.cards.map(v=>`<article class="card grade-troop"><span class="grade-troop-state ${v.ready?'ready':''}">${v.ready?'✓ At target':v.owned?'Below target':'Unlock first'}</span><div class="grade-troop-identity">${gradePortraitHTML(v)}<div><h3>${v.name}</h3><span class="${v.faction.toLowerCase()}">${v.faction}</span></div></div><strong class="grade-level">${v.owned?`Level ${fmt(v.level)}`:'Unowned'}</strong>${v.ready?'':`<p>${v.owned?`${350-v.level} levels to go`:spending?'Costs below assume unlocking at level 1':'Unlock required'}${spending?`<br>${fmt(v.essence)} essence · ${fmt(v.jewels)} ${v.faction} Jewels`:''}</p>`}</article>`).join('')}</div>
  ${spending?`<section class="card grade-budget"><div class="heading"><div><span class="eyebrow">UPGRADE BUDGET</span><h3>What it takes to finish</h3></div><span class="context-chip">Guild Boost ${account.settings.guildBoost?'ON':'OFF'}</span></div><div class="tablewrap"><table><thead><tr><th scope="col">Resource</th><th scope="col">Required</th><th scope="col">Available</th><th scope="col">Still needed</th></tr></thead><tbody>${currencies.map(k=>`<tr><th scope="row">${labels[k]}</th><td>${fmt(p.required[k])}</td><td>${fmt(p.available[k])}</td><td class="${p.shortfall[k]?'grade-shortfall':''}">${fmt(p.shortfall[k])}</td></tr>`).join('')}</tbody></table></div><p class="help">Available essence includes ${fmt(p.ticketEssence)} from full ticket bundles. Estimates use saved balances${p.unowned?' and exclude any costs to unlock troops':''}.</p></section>`:''}
  <details class="card grade-rules"><summary>Eligibility and reward delivery</summary><ul><li>All four troops must be at least level 350 when the campaign ends. Levels reached before the start count.</li><li>Partial completion does not earn Gorrosh.</li><li>Rewards are delivered the following week. No screenshots or support tickets are needed.</li></ul></details></section>`;
 }
