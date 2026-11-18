@@ -38,7 +38,7 @@ input[type=file]{max-width:100%}.status{margin:12px 0 0}.error{color:#fbb6aa}.gr
 <details id="capture-help">
 <summary>How to get the Squad roster file</summary>
 <ol>
-<li><a href="../downloads/MP-Vanguard-Capture-1.0.9.zip" download>Download Vanguard Capture 1.0.9</a>. Unzip it and update your unpacked extension, then click Reload at <code>chrome://extensions</code>.</li>
+<li><a href="../downloads/MP-Vanguard-Capture-1.0.10.zip" download>Download Vanguard Capture 1.0.10</a>. Unzip it and update your unpacked extension, then click Reload at <code>chrome://extensions</code>.</li>
 <li>On your Mighty Party tab, choose <strong>Hero Diagnostics → Start hero capture</strong>.</li>
 <li>After the game reloads, click <strong>Play</strong>. Wait until the extension says <strong>Hero roster captured</strong> or <strong>Hero catalog candidates captured</strong>.</li>
 <li>Click <strong>Download diagnostics</strong> under Hero Diagnostics and load the resulting JSON here.</li>
@@ -67,6 +67,24 @@ input[type=file]{max-width:100%}.status{margin:12px 0 0}.error{color:#fbb6aa}.gr
 <tbody id="squad-upgrades"></tbody>
 </table>
 </div>
+</div>
+<div class="planner" aria-label="Pet upgrade planner">
+<h2>Pets</h2>
+<p id="pet-summary" class="muted"></p>
+<label for="pet-select">Pet</label><select id="pet-select"></select>
+<div class="grid">
+<div><label for="pet-name">Name</label><input id="pet-name" maxlength="60" placeholder="e.g. Oculus"></div>
+<div><label for="pet-faction">Faction</label><select id="pet-faction"><option value="">Unknown</option><option value="order">Order</option><option value="nature">Nature</option><option value="chaos">Chaos</option></select></div>
+<div><label for="pet-rarity">Rarity</label><select id="pet-rarity"><option value="">Unknown</option><option value="common">Common</option><option value="rare">Rare</option><option value="epic">Epic</option><option value="legendary">Legendary</option><option value="mythic">Mythic</option></select></div>
+<div><label for="pet-level">Current level</label><input id="pet-level" type="number" min="1" step="1"></div>
+<div><label for="pet-souls">Current souls</label><input id="pet-souls" type="number" min="0" step="1"></div>
+<div><label for="pet-might">Displayed Might</label><input id="pet-might" type="number" min="0" step="1"></div>
+<div><label for="pet-hp">Permanent Warlord HP bonus</label><input id="pet-hp" type="number" min="0" step="1"></div>
+<div><label for="pet-next-souls">Next level soul cost</label><input id="pet-next-souls" type="number" min="0" step="1"></div>
+<div><label for="pet-next-gold">Next level gold cost shown in game</label><input id="pet-next-gold" type="number" min="0" step="1"></div>
+</div>
+<button id="pet-save" type="button">Save pet</button>
+<p id="pet-status" class="status" role="status"></p>
 </div>
 <div class="planner" aria-label="Warlord level goal">
 <h2>Next Warlord Level</h2>
@@ -209,6 +227,7 @@ function parseRoster(source) {
     capturedAt: typeof source.capturedAt === 'string' ? source.capturedAt : null,
     gold: gameInteger(gold) ? gold : null,
     skipped,
+    pets: Array.isArray(roster.pets) ? parsePets(roster) : null,
     heroes
   };
 }
@@ -642,12 +661,17 @@ function selectAccount(account) {
   clearSquadPlan();
   clearQuest();
   loadWarlordAccount(account);
+  renderPets();
   showMatches();
 }
 
 function storeRoster(roster, name, refreshId) {
   let account = accounts.find(item => item.id === refreshId);
   if (account) {
+    if (roster.pets === null) {
+      roster.pets = account.roster.pets ?? null;
+      roster.petsRetained = roster.pets !== null;
+    }
     account.roster = roster;
     account.settings[0] = roster.gold ?? '';
   } else {
@@ -902,6 +926,130 @@ byId('warlord-calculate').addEventListener('click', () => {
 for (const id of ['warlord-target','gold-budget','gold-discount','squad-cap']) {
   byId(id).addEventListener('input', clearWarlordPlan);
 }
+
+function petNumber(...values) {
+  for (const value of values) {
+    const parsed = typeof value === 'string' && /^\d+$/.test(value) ? Number(value) : value;
+    if (gameInteger(parsed)) return parsed;
+  }
+  return null;
+}
+
+function parsePets(roster) {
+  const rows = Array.isArray(roster.pets) ? roster.pets : [];
+  const pets = new Map();
+  for (const row of rows) {
+    const values = row?.values;
+    if (!values || values.owned === false || values.isOwned === false) continue;
+    const monster = values.monster ?? values;
+    const id = petNumber(monster.monster_id, values.monster_id, monster.monsterId, values.pet_id, values.petId, monster.id);
+    const promotion = petNumber(monster.promote_num, values.promote_num, monster.promoteNum);
+    const level = petNumber(monster.level, values.level, promotion === null ? null : promotion + 1);
+    const souls = petNumber(monster.souls, values.souls);
+    if (!id || !level || souls === null) continue;
+    pets.set(id, {
+      id, level, souls,
+      name: typeof monster.name === 'string' ? monster.name : '',
+      rarity: typeof monster.rarity === 'string' ? monster.rarity.toLowerCase() : '',
+      faction: typeof (monster.faction ?? monster.race) === 'string' ? (monster.faction ?? monster.race).toLowerCase() : '',
+      might: petNumber(monster.might, values.might),
+      health: petNumber(monster.permanentHealthBonus, values.permanentHealthBonus, monster.passiveHp),
+      nextSouls: null, nextGold: null
+    });
+  }
+  return [...pets.values()];
+}
+
+const petFields = {
+  'pet-name':'name', 'pet-faction':'faction', 'pet-rarity':'rarity', 'pet-level':'level',
+  'pet-souls':'souls', 'pet-might':'might', 'pet-hp':'health', 'pet-next-souls':'nextSouls',
+  'pet-next-gold':'nextGold'
+};
+
+function accountPets() {
+  const records = { ...(active.petNotes ?? {}) };
+  for (const captured of imported.pets ?? []) {
+    const key = 'capture-' + captured.id;
+    const prior = records[key];
+    const matchesLevel = prior?.level === captured.level;
+    records[key] = {
+      ...captured,
+      name: prior?.name || captured.name,
+      faction: prior?.faction || captured.faction,
+      rarity: prior?.rarity || captured.rarity,
+      might: captured.might ?? (matchesLevel ? prior.might : null),
+      health: captured.health ?? (matchesLevel ? prior.health : null),
+      nextSouls: matchesLevel ? prior.nextSouls : null,
+      nextGold: matchesLevel ? prior.nextGold : null
+    };
+  }
+  return records;
+}
+
+function showPet() {
+  const pet = active ? accountPets()[byId('pet-select').value] : null;
+  for (const [id, key] of Object.entries(petFields)) byId(id).value = pet?.[key] ?? '';
+  const captured = byId('pet-select').value.startsWith('capture-');
+  byId('pet-level').readOnly = captured;
+  byId('pet-souls').readOnly = captured;
+  showPetAffordability();
+}
+
+function showPetAffordability() {
+  const souls = readWholeNumber('pet-souls', 0, Number.MAX_SAFE_INTEGER);
+  const gold = readWholeNumber('gold-budget', 0, Number.MAX_SAFE_INTEGER);
+  const soulCost = readWholeNumber('pet-next-souls', 0, Number.MAX_SAFE_INTEGER);
+  const goldCost = readWholeNumber('pet-next-gold', 0, Number.MAX_SAFE_INTEGER);
+  const level = readWholeNumber('pet-level', 1, 1000);
+  const status = byId('pet-status');
+  if ([souls, gold, soulCost, goldCost, level].includes(null)) {
+    status.textContent = 'Enter the next promotion’s soul and gold costs as displayed in game.';
+    return;
+  }
+  const difference = (balance, cost, resource) => balance >= cost
+    ? fmt(balance - cost) + ' ' + resource + ' left'
+    : 'short ' + fmt(cost - balance) + ' ' + resource;
+  status.textContent = 'Level ' + level + ' → ' + (level + 1) + ': ' +
+    difference(souls, soulCost, 'souls') + ' · ' + difference(gold, goldCost, 'gold') + '.';
+}
+
+function renderPets(selected = '') {
+  const picker = byId('pet-select');
+  picker.replaceChildren(new Option('Add a pet manually', ''));
+  const pets = Object.entries(accountPets());
+  for (const [key, pet] of pets) {
+    const name = pet.name || ('Pet #' + pet.id);
+    picker.add(new Option(name + ' · Level ' + pet.level + ' · ' + fmt(pet.souls) + ' souls', key));
+  }
+  picker.value = selected || pets[0]?.[0] || '';
+  byId('pet-summary').textContent = imported.pets === null || imported.pets === undefined
+    ? 'Update this account with a Capture 1.0.10 export to look for pets, or add one below.'
+    : fmt(imported.pets.length) + (imported.petsRetained ? ' pets retained from the previous capture.' : ' pets read from this capture.');
+  showPet();
+}
+
+byId('pet-select').addEventListener('change', showPet);
+for (const id of [...Object.keys(petFields), 'gold-budget']) byId(id).addEventListener('input', showPetAffordability);
+
+byId('pet-save').addEventListener('click', () => {
+  if (!active) return;
+  let key = byId('pet-select').value;
+  const current = accountPets()[key];
+  const pet = {id: current?.id ?? null};
+  for (const [id, field] of Object.entries(petFields)) {
+    pet[field] = ['name','faction','rarity'].includes(field) ? byId(id).value.trim()
+      : readWholeNumber(id, field === 'level' ? 1 : 0, field === 'level' ? 1000 : Number.MAX_SAFE_INTEGER);
+  }
+  if ((!key && !pet.name) || pet.level === null || pet.souls === null) {
+    byId('pet-status').textContent = 'Enter the pet’s name, level, and soul balance.';
+    return;
+  }
+  key ||= 'manual-' + crypto.randomUUID();
+  active.petNotes ??= {};
+  active.petNotes[key] = pet;
+  saveAccount();
+  renderPets(key);
+});
 
 try {
   const saved = JSON.parse(localStorage.getItem(storageKey));
