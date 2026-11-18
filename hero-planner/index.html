@@ -85,6 +85,7 @@ input[type=file]{max-width:100%}.status{margin:12px 0 0}.error{color:#fbb6aa}.gr
 </div>
 <button id="pet-save" type="button">Save pet</button>
 <p id="pet-status" class="status" role="status"></p>
+<p class="muted">Estimates through level 26 use the <a href="https://mightyparty.fandom.com/wiki/Pet_Level_Table">published pet costs</a> for Rare, Epic, and Legendary pets. Enter the game’s next promotion price to apply its effective gold rate to later levels. In-game league limits may apply.</p>
 </div>
 <div class="planner" aria-label="Warlord level goal">
 <h2>Next Warlord Level</h2>
@@ -995,22 +996,75 @@ function showPet() {
   showPetAffordability();
 }
 
+// Per-promotion requirements by destination level: rare, epic, legendary, base gold.
+const petPromotionCosts = [
+  [50,30,5,100],[115,80,20,300],[210,150,40,600],[330,230,65,900],
+  [475,340,140,1400],[640,470,240,2000],[820,600,350,3500],[1000,740,470,4000],
+  [1200,900,600,5000],[1675,1150,800,6000],[2200,1450,1050,8000],
+  [2750,1850,1300,10000],[3400,2350,1650,12000],[4300,2950,2100,14000],
+  [5500,3850,2600,16000],[8000,5400,3600,19000],[11000,6600,4400,22000],
+  [14000,8200,5200,25000],[17500,11000,6700,28000],[21500,14000,9000,32000],
+  [26500,19000,12000,36000],[32000,26000,16000,40000],[41000,33000,20000,45000],
+  [52000,44000,28000,50000],[71000,56000,33000,55000]
+];
+const petRarityColumn = new Map([['rare',0],['epic',1],['legendary',2]]);
+
+function planPetPromotions({level, souls, gold, rarity, nextSouls, nextGold}) {
+  const column = petRarityColumn.get(rarity);
+  const base = petPromotionCosts[level - 1];
+  const goldRatio = base && nextGold !== null ? nextGold / base[3] : 1;
+  const steps = [];
+  let stop = null;
+  for (let current = level; ; current++) {
+    const row = petPromotionCosts[current - 1];
+    const first = current === level;
+    const soulCost = (first ? nextSouls : null) ?? (column === undefined ? null : row?.[column] ?? null);
+    const goldCost = (first ? nextGold : null) ?? (row && column !== undefined ? Math.ceil(row[3] * goldRatio - 1e-8) : null);
+    if (soulCost === null || goldCost === null) break;
+    const step = {
+      level: current + 1, souls: soulCost, gold: goldCost,
+      estimated: !first || nextSouls === null || nextGold === null
+    };
+    if (soulCost > souls || goldCost > gold) {
+      stop = {...step, shortSouls: Math.max(0, soulCost - souls), shortGold: Math.max(0, goldCost - gold)};
+      break;
+    }
+    steps.push(step);
+    souls -= soulCost;
+    gold -= goldCost;
+  }
+  return {steps, stop, souls, gold, reached: level + steps.length};
+}
+
 function showPetAffordability() {
   const souls = readWholeNumber('pet-souls', 0, Number.MAX_SAFE_INTEGER);
   const gold = readWholeNumber('gold-budget', 0, Number.MAX_SAFE_INTEGER);
-  const soulCost = readWholeNumber('pet-next-souls', 0, Number.MAX_SAFE_INTEGER);
-  const goldCost = readWholeNumber('pet-next-gold', 0, Number.MAX_SAFE_INTEGER);
   const level = readWholeNumber('pet-level', 1, 1000);
+  const nextSouls = readWholeNumber('pet-next-souls', 0, Number.MAX_SAFE_INTEGER);
+  const nextGold = readWholeNumber('pet-next-gold', 0, Number.MAX_SAFE_INTEGER);
+  const rarity = byId('pet-rarity').value;
   const status = byId('pet-status');
-  if ([souls, gold, soulCost, goldCost, level].includes(null)) {
-    status.textContent = 'Enter the next promotion’s soul and gold costs as displayed in game.';
+  if ([souls, gold, level].includes(null)) {
+    status.textContent = 'Enter the pet’s level, available souls, and your gold budget.';
     return;
   }
-  const difference = (balance, cost, resource) => balance >= cost
-    ? fmt(balance - cost) + ' ' + resource + ' left'
-    : 'short ' + fmt(cost - balance) + ' ' + resource;
-  status.textContent = 'Level ' + level + ' → ' + (level + 1) + ': ' +
-    difference(souls, soulCost, 'souls') + ' · ' + difference(gold, goldCost, 'gold') + '.';
+  const plan = planPetPromotions({level, souls, gold, rarity, nextSouls, nextGold});
+  if (!plan.steps.length && !plan.stop) {
+    status.textContent = 'Costs are unavailable here. Enter the next promotion costs shown in game.';
+    return;
+  }
+  const estimated = plan.steps.some(step => step.estimated);
+  status.textContent = (estimated ? 'Estimated reachable level: ' : 'Reachable level: ') +
+    plan.reached + ' · ' + fmt(souls - plan.souls) + ' souls and ' + fmt(gold - plan.gold) + ' gold to spend. ' +
+    fmt(plan.souls) + ' souls and ' + fmt(plan.gold) + ' gold left.';
+  if (plan.stop) {
+    const short = [];
+    if (plan.stop.shortSouls) short.push(fmt(plan.stop.shortSouls) + ' more souls');
+    if (plan.stop.shortGold) short.push(fmt(plan.stop.shortGold) + ' more gold');
+    status.textContent += ' Level ' + plan.stop.level + (plan.stop.estimated ? ' is estimated to need ' : ' needs ') + short.join(' and ') + '.';
+  } else {
+    status.textContent += ' This reaches the end of the available cost data.';
+  }
 }
 
 function renderPets(selected = '') {
